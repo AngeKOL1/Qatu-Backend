@@ -9,6 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,4 +38,8 @@ public class Notificacion {
     private Boolean leido;
     @Column(nullable = false)
     private LocalDate creDate;
+
+    @ManyToOne
+    @JoinColumn(name = "idVendedor", nullable = false)
+    private Vendedor vendedor;
 }

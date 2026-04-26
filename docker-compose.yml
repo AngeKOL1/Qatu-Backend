@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+
+  # ── Base de datos PostgreSQL + PostGIS ──────────────────────────────
+  qatu-db:
+    image: postgis/postgis:15-3.3
+    container_name: qatu-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: qatu_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"       # accesible desde tu máquina en localhost:5432
+    volumes:
+      - qatu_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # se ejecuta al crear la BD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d qatu_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend Spring Boot ─────────────────────────────────────────────
+  qatu-backend:
+    build: .             # usa el Dockerfile de esta carpeta
+    container_name: qatu-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_URL: jdbc:postgresql://qatu-db:5432/qatu_db  # qatu-db = nombre del servicio
+      JWT_SECRET: ${JWT_SECRET}
+      AES_KEY: ${AES_KEY}
+    depends_on:
+      qatu-db:
+        condition: service_healthy  # espera a que la BD esté lista
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  qatu_postgres_data:    # volumen persistente — los datos no se pierden al reiniciar

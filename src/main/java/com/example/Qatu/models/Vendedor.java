@@ -1,6 +1,7 @@
 package com.example.Qatu.models;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.example.Qatu.models.enums.EstadoVendedor;
 import com.example.Qatu.models.enums.Movilidad;
@@ -10,6 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,4 +55,21 @@ public class Vendedor {
     private LocalDate createdAt; 
     @Column(nullable = false)
     private LocalDate updateAt;
+
+
+    @ManyToOne
+    @JoinColumn(name = "idCategoria", nullable = false)
+    private Categoria categoria;
+
+    @OneToMany(mappedBy = "vendedor")
+    private List<Producto> productos;
+
+    @OneToMany(mappedBy = "vendedor")
+    private List<Ubicacion> ubicaciones;
+
+    @OneToMany(mappedBy = "vendedor")
+    private List<Notificacion> notificaciones;
+
+    @OneToMany(mappedBy = "vendedor")
+    private List<Reporte> reportes;
 }

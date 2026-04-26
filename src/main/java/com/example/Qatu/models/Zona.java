@@ -3,6 +3,7 @@ package com.example.Qatu.models;
 import java.time.LocalDate;
 
 import org.geolatte.geom.Point;
+import org.hibernate.annotations.ManyToAny;
 
 import com.example.Qatu.models.enums.TipoZona;
 
@@ -11,6 +12,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,4 +47,8 @@ public class Zona {
     private LocalDate fechaCreacion;
     @Column(nullable = false)
     private LocalDate fechaExpiracion;
+
+    @ManyToOne
+    @JoinColumn(name = "administrador_id", nullable = false)
+    private Administrador administrador;
 }
