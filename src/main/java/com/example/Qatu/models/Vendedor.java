@@ -1,6 +1,8 @@
 package com.example.Qatu.models;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.example.Qatu.models.enums.EstadoVendedor;
@@ -14,6 +16,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,7 +40,9 @@ public class Vendedor {
     @Column(unique = true, nullable = false)
     private String email;
     @Column(length =8, nullable = false)
-    private String Dni;
+    private String dni;
+    @Column(nullable = false)
+    private String password;
     @Column(length = 20, nullable = false)
     private String telefono;
     @Column(length = 255, nullable = true)
@@ -46,15 +52,15 @@ public class Vendedor {
     @Column(nullable = false)
     private EstadoVendedor estado;
     @Column(nullable = false)
-    private LocalDate horarioInicio; 
+    private LocalTime horarioInicio; 
     @Column(nullable = false)
-    private LocalDate horarioFin;
+    private LocalTime horarioFin;
     @Column(nullable = true)
     private String fotoPerfilUrl;
     @Column(nullable = false)
-    private LocalDate createdAt; 
+    private LocalDateTime createdAt; 
     @Column(nullable = false)
-    private LocalDate updateAt;
+    private LocalDateTime updatedAt;
 
 
     @ManyToOne
@@ -72,4 +78,21 @@ public class Vendedor {
 
     @OneToMany(mappedBy = "vendedor")
     private List<Reporte> reportes;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.estado = EstadoVendedor.PENDIENTE;
+        this.productos = new ArrayList<>();
+        this.ubicaciones = new ArrayList<>();
+        this.notificaciones = new ArrayList<>();
+        this.reportes = new ArrayList<>();
+    }
+
+    // Se ejecuta automáticamente antes de actualizar
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

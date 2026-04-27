@@ -2,6 +2,7 @@ package com.example.Qatu.service.impl;
 
 import java.util.List;
 
+import com.example.Qatu.exception.ModelNotFoundException;
 import com.example.Qatu.repository.GenericRepo;
 import com.example.Qatu.service.IGenericService;
 
@@ -18,7 +19,7 @@ public abstract class GenericService<T, ID> implements IGenericService<T, ID> {
     public T update(T t, ID id) {
 
         if (!getRepo().existsById(id)) {
-            throw new RuntimeException(ID_NOT_FOUND_MESSAGE + id);
+            throw new ModelNotFoundException(ID_NOT_FOUND_MESSAGE + id);
         }
 
         return getRepo().save(t);
@@ -32,14 +33,14 @@ public abstract class GenericService<T, ID> implements IGenericService<T, ID> {
     @Override
     public T findById(ID id) {
         return getRepo().findById(id)
-                .orElseThrow(() -> new RuntimeException(ID_NOT_FOUND_MESSAGE + id));
+                .orElseThrow(() -> new ModelNotFoundException(ID_NOT_FOUND_MESSAGE + id));
     }
 
     @Override
     public void delete(ID id) {
 
         if (!getRepo().existsById(id)) {
-            throw new RuntimeException(ID_NOT_FOUND_MESSAGE + id);
+            throw new ModelNotFoundException(ID_NOT_FOUND_MESSAGE + id);
         }
 
         getRepo().deleteById(id);

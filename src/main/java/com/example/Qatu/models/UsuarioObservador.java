@@ -35,6 +35,8 @@ public class UsuarioObservador {
     private String email;
     @Column(length = 20, nullable = false, unique = true)
     private String telefono;
+    @Column(nullable = false)
+    private String password;
     @Column(length = 255, nullable = false)
     private EstadoObservador estado;
     @Column(nullable = false)
