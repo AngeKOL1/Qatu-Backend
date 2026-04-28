@@ -1,6 +1,5 @@
 package com.example.Qatu.dto;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 
 import com.example.Qatu.models.enums.Movilidad;
