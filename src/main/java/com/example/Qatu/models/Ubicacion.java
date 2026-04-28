@@ -1,22 +1,12 @@
 package com.example.Qatu.models;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-import org.geolatte.geom.Point;
+import org.locationtech.jts.geom.Point; 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
@@ -25,23 +15,32 @@ import lombok.NoArgsConstructor;
 @Table(name = "ubicaciones")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Ubicacion {
+
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    // El Point ya contiene lat y lng 
     @Column(columnDefinition = "geography(Point, 4326)", nullable = false)
     private Point coordenada;
-    @Column(nullable = false, length = 100)
-    private Double latitud;
-    @Column(nullable = false)
-    private Double longitud;
-    @Column(nullable = false)
-    private Boolean activo;
 
-    @ManyToOne
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
+
+    @Column(nullable = false)
+    private Boolean activa = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idVendedor", nullable = false)
     private Vendedor vendedor;
 
-    @OneToMany(mappedBy = "ubicacion")
-    private List<SugerenciaReasignacion> sugerenciaReasignacion;
+    @OneToMany(mappedBy = "ubicacion", cascade = CascadeType.ALL)
+    private List<SugerenciaReasignacion> sugerenciasReasignacion;
+
+    @PrePersist
+    public void prePersist() {
+        this.timestamp = LocalDateTime.now();
+        this.activa = true;
+    }
 }

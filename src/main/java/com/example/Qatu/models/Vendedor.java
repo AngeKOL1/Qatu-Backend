@@ -61,6 +61,8 @@ public class Vendedor {
     private LocalDateTime createdAt; 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private Boolean visible = false;
 
 
     @ManyToOne
@@ -84,6 +86,7 @@ public class Vendedor {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.estado = EstadoVendedor.PENDIENTE;
+        this.visible = false;
         this.productos = new ArrayList<>();
         this.ubicaciones = new ArrayList<>();
         this.notificaciones = new ArrayList<>();

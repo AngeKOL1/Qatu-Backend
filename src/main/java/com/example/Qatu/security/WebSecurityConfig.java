@@ -89,32 +89,33 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/vendedor").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/observador").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers("/api/vendedores/mi-**").hasAuthority("VENDEDOR")
 
-                // ── Catálogo público ─────────────────────────────────────
-                .requestMatchers(HttpMethod.GET, "/api/vendedores/{id}/productos").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/vendedores").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/vendedores/{id}").permitAll()
+                // // ── Catálogo público ─────────────────────────────────────
+                // .requestMatchers(HttpMethod.GET, "/api/vendedores/{id}/productos").permitAll()
+                // .requestMatchers(HttpMethod.GET, "/api/vendedores").permitAll()
+                // .requestMatchers(HttpMethod.GET, "/api/vendedores/{id}").permitAll()
 
-                // ── Vendedor ─────────────────────────────────────────────
-                .requestMatchers(HttpMethod.PATCH, "/api/vendedores/**").hasAuthority("VENDEDOR")
-                .requestMatchers(HttpMethod.POST,  "/api/vendedores/**").hasAuthority("VENDEDOR")
-                .requestMatchers(HttpMethod.PUT,   "/api/vendedores/**").hasAuthority("VENDEDOR")
-                .requestMatchers(HttpMethod.DELETE,"/api/vendedores/**").hasAuthority("VENDEDOR")
-                .requestMatchers(HttpMethod.POST,  "/api/reportes").hasAuthority("VENDEDOR")
+                // // ── Vendedor ─────────────────────────────────────────────
+                // .requestMatchers(HttpMethod.PATCH, "/api/vendedores/**").hasAuthority("VENDEDOR")
+                // .requestMatchers(HttpMethod.POST,  "/api/vendedores/**").hasAuthority("VENDEDOR")
+                // .requestMatchers(HttpMethod.PUT,   "/api/vendedores/**").hasAuthority("VENDEDOR")
+                // .requestMatchers(HttpMethod.DELETE,"/api/vendedores/**").hasAuthority("VENDEDOR")
+                // .requestMatchers(HttpMethod.POST,  "/api/reportes").hasAuthority("VENDEDOR")
 
-                // ── UsuarioObservador ────────────────────────────────────
-                .requestMatchers(HttpMethod.GET, "/api/mapa/vendedores").hasAuthority("USUARIO_OBSERVADOR")
+                // // ── UsuarioObservador ────────────────────────────────────
+                // .requestMatchers(HttpMethod.GET, "/api/mapa/vendedores").hasAuthority("USUARIO_OBSERVADOR")
 
-                // ── Mapa y heatmap (cualquier autenticado) ───────────────
-                .requestMatchers(HttpMethod.GET, "/api/mapa/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/zonas").authenticated()
+                // // ── Mapa y heatmap (cualquier autenticado) ───────────────
+                // .requestMatchers(HttpMethod.GET, "/api/mapa/**").authenticated()
+                // .requestMatchers(HttpMethod.GET, "/api/zonas").authenticated()
 
-                // ── Admin ────────────────────────────────────────────────
-                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.POST,   "/api/zonas").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.PUT,    "/api/zonas/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/zonas/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.PATCH,  "/api/zonas/**").hasAuthority("ADMIN")
+                // // ── Admin ────────────────────────────────────────────────
+                // .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                // .requestMatchers(HttpMethod.POST,   "/api/zonas").hasAuthority("ADMIN")
+                // .requestMatchers(HttpMethod.PUT,    "/api/zonas/**").hasAuthority("ADMIN")
+                // .requestMatchers(HttpMethod.DELETE, "/api/zonas/**").hasAuthority("ADMIN")
+                // .requestMatchers(HttpMethod.PATCH,  "/api/zonas/**").hasAuthority("ADMIN")
 
                 // ── Todo lo demás requiere autenticación ─────────────────
                 .anyRequest().authenticated()

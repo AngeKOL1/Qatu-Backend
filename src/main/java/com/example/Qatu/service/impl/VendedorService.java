@@ -4,13 +4,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.Qatu.dto.VendedorRegisterDTO;
+import com.example.Qatu.dto.VendedorResponseDTO;
 import com.example.Qatu.mapper.VendedorMapper;
 import com.example.Qatu.models.Categoria;
 import com.example.Qatu.models.Vendedor;
+import com.example.Qatu.models.enums.EstadoVendedor;
 import com.example.Qatu.repository.CategoriaRepo;
 import com.example.Qatu.repository.VendedorRepo;
 import com.example.Qatu.service.IVendedorService;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
@@ -44,5 +47,23 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
 
         // 5. Guardar
         return repo.save(vendedor);
+    }
+    @Override
+    @Transactional
+    public VendedorResponseDTO cambiarVisibilidad(Integer vendedorId, Boolean visible) {
+
+        Vendedor vendedor = repo.findById(vendedorId)
+            .orElseThrow(() -> new IllegalArgumentException("Vendedor no encontrado"));
+
+        // Solo un vendedor ACTIVO puede cambiar su visibilidad
+        if (vendedor.getEstado() != EstadoVendedor.ACTIVO) {
+            throw new RuntimeException(
+                "Tu cuenta aún no está aprobada. No puedes aparecer en el mapa.");
+        }
+
+        vendedor.setVisible(visible);
+        Vendedor actualizado = repo.save(vendedor);
+
+        return mapper.toResponseDTO(actualizado);
     }
 }
