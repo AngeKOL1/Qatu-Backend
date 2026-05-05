@@ -11,6 +11,7 @@ import com.example.Qatu.models.Vendedor;
 import com.example.Qatu.models.enums.EstadoVendedor;
 import com.example.Qatu.repository.UbicacionRepo;
 import com.example.Qatu.repository.VendedorRepo;
+import com.example.Qatu.service.IWebSoketSevice;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ public class InactividadVendedorJob {
 
     private final UbicacionRepo ubicacionRepo;
     private final VendedorRepo vendedorRepo;
+    private final IWebSoketSevice webSoketSevice;
 
     // Se ejecuta cada 5 minutos
     @Scheduled(fixedRate = 300000)
@@ -40,6 +42,9 @@ public class InactividadVendedorJob {
                         // Desactivar ubicación
                         ubicacion.setActiva(false);
                         ubicacionRepo.save(ubicacion);
+
+                        webSoketSevice.emitirVendedorInactivo(vendedor.getId());
+
                         log.info("Vendedor {} marcado inactivo por falta de GPS", 
                             vendedor.getId());
                     }

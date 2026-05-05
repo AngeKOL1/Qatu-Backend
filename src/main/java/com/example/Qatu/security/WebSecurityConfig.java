@@ -86,6 +86,8 @@ public class WebSecurityConfig {
             .authorizeHttpRequests(req -> req
 
                 // ── Públicas — registro y login ──────────────────────────
+                .requestMatchers("/ws/mapa/**").permitAll()
+                .requestMatchers("/ws/mapa-native/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/vendedor").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/observador").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
