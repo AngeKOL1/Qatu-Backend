@@ -22,6 +22,7 @@ public interface VendedorMapper {
     @Mapping(target = "notificaciones", ignore = true)
     @Mapping(target = "reportes", ignore = true)
     @Mapping(target = "fotoPerfilUrl", ignore = true)
+    @Mapping(target = "visible", ignore = true)
     Vendedor toVendedor(VendedorRegisterDTO dto);
 
     // Mapeamos de Vendedor a VendedorResponseDTO, extrayendo el nombre de la categoría
