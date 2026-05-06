@@ -1,12 +1,8 @@
 package com.example.Qatu.models;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 import com.example.Qatu.models.enums.EstadoObservador;
-import com.example.Qatu.models.enums.EstadoVendedor;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

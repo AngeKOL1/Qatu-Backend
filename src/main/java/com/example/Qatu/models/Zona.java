@@ -3,7 +3,6 @@ package com.example.Qatu.models;
 import java.time.LocalDate;
 
 import org.geolatte.geom.Point;
-import org.hibernate.annotations.ManyToAny;
 
 import com.example.Qatu.models.enums.TipoZona;
 

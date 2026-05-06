@@ -53,4 +53,5 @@ public class AuthController {
         UsuarioObservadorResponseDTO response = usuarioObservadorService.registrarUsuarioObservador(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 }
