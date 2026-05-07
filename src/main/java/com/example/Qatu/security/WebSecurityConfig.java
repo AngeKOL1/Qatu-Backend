@@ -92,6 +92,9 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/vendedor").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register/observador").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auth/test/hash").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/test/ws").permitAll()
+
 
                 .requestMatchers("/api/vendedores/mi-**").hasAuthority("VENDEDOR")
 

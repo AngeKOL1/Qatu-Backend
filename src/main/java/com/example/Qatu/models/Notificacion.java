@@ -40,6 +40,6 @@ public class Notificacion {
     private LocalDate creDate;
 
     @ManyToOne
-    @JoinColumn(name = "idVendedor", nullable = false)
+    @JoinColumn(name = "vendedor_id", nullable = false)
     private Vendedor vendedor;
 }

@@ -36,11 +36,11 @@ public class InactividadVendedorJob {
             .findByEstado(EstadoVendedor.ACTIVO);
 
         for (Vendedor vendedor : vendedoresActivos) {
-            ubicacionRepo.findByVendedorIdAndActivaTrue(vendedor.getId())
+            ubicacionRepo.findByVendedorIdAndActivoTrue(vendedor.getId())
                 .ifPresent(ubicacion -> {
                     if (ubicacion.getTimestamp().isBefore(limite)) {
                         // Desactivar ubicación
-                        ubicacion.setActiva(false);
+                        ubicacion.setActivo(false);
                         ubicacionRepo.save(ubicacion);
 
                         webSoketSevice.emitirVendedorInactivo(vendedor.getId());

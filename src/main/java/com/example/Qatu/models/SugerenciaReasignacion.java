@@ -36,7 +36,7 @@ public class SugerenciaReasignacion {
     private LocalDate fechaRespuesta;
 
     @ManyToOne
-    @JoinColumn(name = "idUbicacion", nullable = false)
+    @JoinColumn(name = "ubicacion_id", nullable = false)
     private Ubicacion ubicacion;
     
 }

@@ -10,6 +10,8 @@ import com.example.Qatu.models.enums.Movilidad;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -48,8 +50,10 @@ public class Vendedor {
     @Column(length = 255, nullable = true)
     private String descripcion;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Movilidad tipoMovilidad;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private EstadoVendedor estado;
     @Column(nullable = false)
     private LocalTime horarioInicio; 
@@ -66,7 +70,7 @@ public class Vendedor {
 
 
     @ManyToOne
-    @JoinColumn(name = "idCategoria", nullable = false)
+    @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
     @OneToMany(mappedBy = "vendedor")

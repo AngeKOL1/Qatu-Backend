@@ -48,11 +48,11 @@ public class Reporte {
     private LocalDateTime updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "idVendedor", nullable = false)
+    @JoinColumn(name = "vendedor_id", nullable = false)
     private Vendedor vendedor;
 
     @ManyToOne
-    @JoinColumn(name = "idAdministrador", nullable = true) // ← nullable true
+    @JoinColumn(name = "administrador_id", nullable = true) // ← nullable true
     private Administrador administrador;
 
     @PrePersist

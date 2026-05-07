@@ -3,10 +3,12 @@ package com.example.Qatu.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.Qatu.dto.LoginRequestDTO;
 import com.example.Qatu.dto.LoginResponseDTO;
+import com.example.Qatu.dto.UbicacionEventDTO;
 import com.example.Qatu.dto.UsuarioObservadorRegisterDTO;
 import com.example.Qatu.dto.UsuarioObservadorResponseDTO;
 import com.example.Qatu.dto.VendedorRegisterDTO;
@@ -28,6 +30,7 @@ public class AuthController {
     private final IVendedorService vendedorService;
     private final VendedorMapper vendedorMapper;
     private final IUsuarioObservadorService usuarioObservadorService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(
@@ -53,5 +56,4 @@ public class AuthController {
         UsuarioObservadorResponseDTO response = usuarioObservadorService.registrarUsuarioObservador(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
 }

@@ -29,10 +29,10 @@ public class Ubicacion {
     private LocalDateTime timestamp;
 
     @Column(nullable = false)
-    private Boolean activa = true;
+    private Boolean activo = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idVendedor", nullable = false)
+    @JoinColumn(name = "vendedor_id", nullable = false)
     private Vendedor vendedor;
 
     @OneToMany(mappedBy = "ubicacion", cascade = CascadeType.ALL)
@@ -41,6 +41,6 @@ public class Ubicacion {
     @PrePersist
     public void prePersist() {
         this.timestamp = LocalDateTime.now();
-        this.activa = true;
+        this.activo = true;
     }
 }

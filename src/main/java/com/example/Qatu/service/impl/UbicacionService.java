@@ -52,7 +52,7 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
         Ubicacion nueva = new Ubicacion();
         nueva.setVendedor(vendedor);
         nueva.setCoordenada(GeoUtils.crearPunto(dto.getLat(), dto.getLng()));
-        nueva.setActiva(true);
+        nueva.setActivo(true);
         nueva.setTimestamp(LocalDateTime.now());
         Ubicacion guardada = ubicacionRepo.save(nueva);
 

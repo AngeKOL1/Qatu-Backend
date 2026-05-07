@@ -70,7 +70,7 @@ class UbicacionServiceTest {
         ubicacionGuardada.setVendedor(vendedor);
         ubicacionGuardada.setCoordenada(GeoUtils.crearPunto(-7.1638, -78.5001));
         ubicacionGuardada.setTimestamp(LocalDateTime.now());
-        ubicacionGuardada.setActiva(true);
+        ubicacionGuardada.setActivo(true);
 
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedor));
         doNothing().when(ubicacionRepo).desactivarPorVendedor(1);
