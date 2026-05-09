@@ -95,6 +95,12 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/auth/test/hash").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/test/ws").permitAll()
 
+                // Productos de vendedores
+                .requestMatchers(HttpMethod.GET, "/api/productos/{id}/productos").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/productos/mis-productos").hasAuthority("VENDEDOR")
+                .requestMatchers(HttpMethod.PUT, "/api/productos/mis-productos/{pid}").hasAuthority("VENDEDOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/mis-productos/{pid}").hasAuthority("VENDEDOR")
+
 
                 .requestMatchers("/api/vendedores/mi-**").hasAuthority("VENDEDOR")
 
