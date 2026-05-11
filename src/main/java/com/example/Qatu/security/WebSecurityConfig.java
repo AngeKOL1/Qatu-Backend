@@ -101,6 +101,12 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/productos/mis-productos/{pid}").hasAuthority("VENDEDOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/mis-productos/{pid}").hasAuthority("VENDEDOR")
 
+                // Zonas del mapa
+                .requestMatchers(HttpMethod.GET, "/api/zonas/mapa").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/zonas/admin/zonas").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/zonas/admin/{id}").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/zonas/admin/{id}").hasAuthority("ADMIN")
+
 
                 .requestMatchers("/api/vendedores/mi-**").hasAuthority("VENDEDOR")
 

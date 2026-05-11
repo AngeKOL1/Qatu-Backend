@@ -7,12 +7,13 @@ import org.springframework.stereotype.Service;
 
 import com.example.Qatu.dto.CongestionEventDTO;
 import com.example.Qatu.dto.UbicacionEventDTO;
+import com.example.Qatu.dto.ZonaResponseDTO;
 import com.example.Qatu.service.IWebSoketSevice;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class WebSocketService implements IWebSoketSevice{
+public class WebSocketService implements IWebSoketSevice {
 
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -34,7 +35,6 @@ public class WebSocketService implements IWebSoketSevice{
         messagingTemplate.convertAndSend("/topic/mapa/congestion", evento);
     }
 
-
     // Emite cuando el vendedor se desconecta (pin desaparece del mapa)
     @Override
     public void emitirVendedorInactivo(Integer vendedorId) {
@@ -48,5 +48,11 @@ public class WebSocketService implements IWebSoketSevice{
                 .build();
 
         messagingTemplate.convertAndSend("/topic/mapa/ubicaciones", evento);
+    }
+
+    @Override
+    public void emitirZonaCreada(ZonaResponseDTO zona) {
+        log.info("WS → ZONA_CREADA id={} tipo={}", zona.getId(), zona.getTipoZona());
+        messagingTemplate.convertAndSend("/topic/mapa/zonas", zona);
     }
 }
