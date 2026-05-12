@@ -1,5 +1,6 @@
 package com.example.Qatu.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,4 +29,22 @@ public interface UbicacionRepo extends GenericRepo<Ubicacion, Integer> {
     int contarEnRadio100m(@Param("lat") double lat, @Param("lng") double lng);
 
     Optional<Ubicacion> findByVendedorIdAndActivoTrue(Integer vendedorId);
+
+    // Obtener todos los puntos activos con su conteo de vecinos en radio
+    @Query(value = """
+        SELECT
+            ST_Y(u.coordenada::geometry)  AS lat,
+            ST_X(u.coordenada::geometry)  AS lng,
+            COUNT(*) OVER (
+                PARTITION BY ST_SnapToGrid(
+                    u.coordenada::geometry, :radio / 111320.0
+                )
+            ) AS count
+        FROM ubicaciones u
+        JOIN vendedores v ON v.id = u.vendedor_id
+        WHERE u.activo = true
+        AND v.estado = 'ACTIVO'
+        AND v.visible = true
+        """, nativeQuery = true)
+    List<Object[]> findPuntosActivosConDensidad(@Param("radio") double radio);
 }
