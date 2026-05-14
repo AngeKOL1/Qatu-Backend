@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.*;
 import com.example.Qatu.dto.ActualizarReporteDTO;
 import com.example.Qatu.dto.CambiarEstadoVendedorDTO;
 import com.example.Qatu.dto.ReporteResponseDTO;
+import com.example.Qatu.dto.UmbralRequestDTO;
 import com.example.Qatu.dto.VendedorResponseDTO;
 import com.example.Qatu.models.enums.EstadoVendedor;
 import com.example.Qatu.service.IAdministradorService;
+import com.example.Qatu.service.impl.HeatmapService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class AdministradorController {
 
     private final IAdministradorService administradorService;
+    private final HeatmapService heatmapService;
 
     // ── Vendedores ────────────────────────────────────────────────────────────
 
@@ -65,5 +68,13 @@ public class AdministradorController {
                 id, dto.getEstado(), dto.getRespuesta()));
     }
 
+    // PATCH /api/admin/heatmap/umbral
+    @PatchMapping("/heatmap/umbral")
+    public ResponseEntity<Void> actualizarUmbral(
+            @Valid @RequestBody UmbralRequestDTO dto) {
+
+        heatmapService.actualizarUmbral(dto.getUmbralRojo(), dto.getUmbralAmarillo());
+        return ResponseEntity.ok().build();
+    }
     
 }

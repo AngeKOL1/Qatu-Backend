@@ -27,6 +27,7 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
     private final VendedorRepo vendedorRepo;
     private final UbicacionRepo ubicacionRepo;
     private final IWebSoketSevice webSocketService;
+    private final HeatmapService heatmapService;
 
     @Override
     protected UbicacionRepo getRepo() {
@@ -87,11 +88,9 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
     }
 
     // Determina el nivel de congestión y emite el evento
+    // En UbicacionService.actualizarUbicacion(), reemplaza el método privado:
     private void emitirNivelCongestion(double lat, double lng, int count) {
-        String nivel;
-        if (count >= 10)      nivel = "ROJO";
-        else if (count >= 5)  nivel = "AMARILLO";
-        else                  nivel = "VERDE";
+        String nivel = heatmapService.determinarNivel(count);
 
         CongestionEventDTO evento = CongestionEventDTO.builder()
             .evento("ZONA_CONGESTIONADA")
