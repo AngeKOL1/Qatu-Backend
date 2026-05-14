@@ -113,6 +113,8 @@ public class WebSecurityConfig {
                 // Administración de vendedores y reportes solo para ADMIN
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
 
+                // Para Mapa
+                .requestMatchers("/api/mapa/heatmap").authenticated()
 
                 // ── Todo lo demás requiere autenticación ─────────────────
                 .anyRequest().authenticated()
