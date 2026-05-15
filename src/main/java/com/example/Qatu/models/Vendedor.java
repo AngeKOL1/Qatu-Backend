@@ -67,6 +67,8 @@ public class Vendedor {
     private LocalDateTime updatedAt;
     @Column(nullable = false)
     private Boolean visible = false;
+    @Column(nullable = true, length = 500)
+    private String fcmToken;
 
 
     @ManyToOne

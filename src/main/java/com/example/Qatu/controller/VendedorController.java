@@ -1,6 +1,7 @@
 package com.example.Qatu.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,5 +58,16 @@ public class VendedorController {
             vendedorService.cambiarVisibilidad(vendedorId, dto.getVisible());
 
         return ResponseEntity.ok(response);
+    }
+
+    // En VendedorController:
+    @PatchMapping("/mi-fcm-token")
+    public ResponseEntity<Void> actualizarFcmToken(
+            @RequestBody Map<String, String> body,
+            @RequestHeader("Authorization") String token) {
+
+        Integer vendedorId = jwtTokenUtil.getIdUsuarioFromToken(token);
+        vendedorService.actualizarFcmToken(vendedorId, body.get("fcmToken"));
+        return ResponseEntity.ok().build();
     }
 }

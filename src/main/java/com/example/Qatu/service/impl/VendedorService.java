@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.Qatu.dto.VendedorRegisterDTO;
 import com.example.Qatu.dto.VendedorResponseDTO;
+import com.example.Qatu.exception.ModelNotFoundException;
 import com.example.Qatu.mapper.VendedorMapper;
 import com.example.Qatu.models.Categoria;
 import com.example.Qatu.models.Vendedor;
@@ -65,5 +66,12 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
         Vendedor actualizado = repo.save(vendedor);
 
         return mapper.toResponseDTO(actualizado);
+    }
+    @Override
+    public void actualizarFcmToken(Integer vendedorId, String fcmToken) {
+        Vendedor vendedor = repo.findById(vendedorId)
+            .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
+        vendedor.setFcmToken(fcmToken);
+        repo.save(vendedor);
     }
 }

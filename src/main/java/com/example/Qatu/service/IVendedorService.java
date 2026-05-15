@@ -8,4 +8,5 @@ public interface IVendedorService extends IGenericService<Vendedor, Integer> {
     // Métodos específicos para Vendedor
     Vendedor registrarVendedor(VendedorRegisterDTO dto);
     VendedorResponseDTO cambiarVisibilidad(Integer vendedorId, Boolean visible);
+    void actualizarFcmToken(Integer vendedorId, String fcmToken);
 }
