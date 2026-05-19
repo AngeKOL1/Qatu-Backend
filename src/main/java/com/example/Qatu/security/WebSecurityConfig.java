@@ -107,7 +107,11 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/zonas/admin/{id}").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/zonas/admin/{id}").hasAuthority("ADMIN")
 
+                // Sugerencias de reasignación
+                .requestMatchers("/api/sugerencias/**").hasAuthority("VENDEDOR")
 
+
+                
                 .requestMatchers("/api/vendedores/mi-**").hasAuthority("VENDEDOR")
 
                 // Administración de vendedores y reportes solo para ADMIN

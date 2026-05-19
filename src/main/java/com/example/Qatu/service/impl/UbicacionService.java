@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
+import com.example.Qatu.config.UmbralConfig;
 import com.example.Qatu.dto.CongestionEventDTO;
 import com.example.Qatu.dto.UbicacionEventDTO;
 import com.example.Qatu.dto.UbicacionRequestDTO;
@@ -28,11 +29,14 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
     private final UbicacionRepo ubicacionRepo;
     private final IWebSoketSevice webSocketService;
     private final HeatmapService heatmapService;
+    private final SugerenciaDeReasignacionService sugerenciaService;
+    private final UmbralConfig umbralConfig;
 
     @Override
     protected UbicacionRepo getRepo() {
         return repo;
     } 
+
     @Override
     @Transactional
     public UbicacionResponseDTO actualizarUbicacion(
@@ -73,9 +77,15 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
         webSocketService.emitirUbicacionActualizada(evento);
 
         // 5. Calcular congestión y emitir si supera umbral ← NUEVO
-        int vendedoresEnZona = ubicacionRepo.contarEnRadio100m(
-            dto.getLat(), dto.getLng());
+
+        int vendedoresEnZona = ubicacionRepo.contarEnRadio100m(dto.getLat(), dto.getLng());
         emitirNivelCongestion(dto.getLat(), dto.getLng(), vendedoresEnZona);
+
+        // ← NUEVO: evaluar si se debe enviar sugerencia
+        if (vendedoresEnZona >= umbralConfig.getUmbralRojo()) {
+            sugerenciaService.evaluarYEnviarSugerencia(
+                vendedorId, dto.getLat(), dto.getLng());
+        }
 
         // 6. Armar response
         return UbicacionResponseDTO.builder()
