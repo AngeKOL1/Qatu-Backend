@@ -8,26 +8,46 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
-import java.io.InputStream;
 
 @Configuration
+@Slf4j
 public class FirebaseConfig {
 
-    @Value("${qatu.firebase.credentials-path}")
+    @Value("${qatu.firebase.credentials-path:}")
     private String credentialsPath;
 
     @PostConstruct
-    public void initialize() throws IOException {
-        if (FirebaseApp.getApps().isEmpty()) {
-            InputStream credentials =
-                new ClassPathResource(credentialsPath).getInputStream();
+    public void initialize() {
 
-            FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(credentials))
-                .build();
+        // Si no hay path configurado, Firebase queda desactivado
+        if (credentialsPath == null || credentialsPath.isBlank()) {
+            log.warn("Firebase no configurado — FCM desactivado");
+            return;  // ← sale aquí, no intenta leer ningún archivo
+        }
 
-            FirebaseApp.initializeApp(options);
+        try {
+            if (FirebaseApp.getApps().isEmpty()) {
+                ClassPathResource resource = new ClassPathResource(credentialsPath);
+
+                if (!resource.exists()) {
+                    log.warn("Archivo Firebase no encontrado: {} — FCM desactivado",
+                        credentialsPath);
+                    return;
+                }
+
+                FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials
+                        .fromStream(resource.getInputStream()))
+                    .build();
+
+                FirebaseApp.initializeApp(options);
+                log.info("Firebase inicializado correctamente");
+            }
+        } catch (IOException e) {
+            log.error("Error inicializando Firebase: {}", e.getMessage());
         }
     }
 }

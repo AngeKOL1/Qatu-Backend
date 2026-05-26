@@ -9,6 +9,7 @@ import com.example.Qatu.dto.CongestionEventDTO;
 import com.example.Qatu.dto.UbicacionEventDTO;
 import com.example.Qatu.dto.UbicacionRequestDTO;
 import com.example.Qatu.dto.UbicacionResponseDTO;
+import com.example.Qatu.exception.ModelNotFoundException;
 import com.example.Qatu.models.Ubicacion;
 import com.example.Qatu.models.Vendedor;
 import com.example.Qatu.models.enums.EstadoVendedor;
@@ -26,7 +27,6 @@ import lombok.AllArgsConstructor;
 public class UbicacionService extends GenericService<Ubicacion, Integer> implements IUbicacionService {
     private final UbicacionRepo repo;
     private final VendedorRepo vendedorRepo;
-    private final UbicacionRepo ubicacionRepo;
     private final IWebSoketSevice webSocketService;
     private final HeatmapService heatmapService;
     private final SugerenciaDeReasignacionService sugerenciaService;
@@ -44,14 +44,14 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
 
         // 1. Verificar vendedor
         Vendedor vendedor = vendedorRepo.findById(vendedorId)
-            .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
+            .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
 
         if (vendedor.getEstado() != EstadoVendedor.ACTIVO) {
-            throw new RuntimeException("El vendedor no está activo");
+            throw new ModelNotFoundException("El vendedor no está activo");
         }
 
         // 2. Desactivar ubicación anterior
-        ubicacionRepo.desactivarPorVendedor(vendedorId);
+        repo.desactivarPorVendedor(vendedorId);
 
         // 3. Crear nueva ubicación
         Ubicacion nueva = new Ubicacion();
@@ -59,7 +59,7 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
         nueva.setCoordenada(GeoUtils.crearPunto(dto.getLat(), dto.getLng()));
         nueva.setActivo(true);
         nueva.setTimestamp(LocalDateTime.now());
-        Ubicacion guardada = ubicacionRepo.save(nueva);
+        Ubicacion guardada = repo.save(nueva);
 
         // 4. Emitir evento WebSocket ← NUEVO
         UbicacionEventDTO evento = UbicacionEventDTO.builder()
@@ -78,7 +78,7 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
 
         // 5. Calcular congestión y emitir si supera umbral ← NUEVO
 
-        int vendedoresEnZona = ubicacionRepo.contarEnRadio100m(dto.getLat(), dto.getLng());
+        int vendedoresEnZona = repo.contarEnRadio100m(dto.getLat(), dto.getLng());
         emitirNivelCongestion(dto.getLat(), dto.getLng(), vendedoresEnZona);
 
         // ← NUEVO: evaluar si se debe enviar sugerencia
