@@ -122,6 +122,9 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/mapa/heatmap").authenticated()
                 .requestMatchers("/api/mapa/vendedores").authenticated()
 
+                // Reportes
+                .requestMatchers("/api/reportes/mis-reportes").hasAuthority("VENDEDOR")
+
                 // ── Todo lo demás requiere autenticación ─────────────────
                 .anyRequest().authenticated()
             )

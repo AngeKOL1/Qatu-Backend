@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,14 +36,14 @@ public class Reporte {
     @Column(nullable = false, length = 500)
     private String descripcion;
 
-    @Column(nullable = false, length = 500)
-    private String respuesta;           // ← respuesta del admin
+    @Column(nullable = true, length = 500)
+    private String respuesta; // ← respuesta del admin
 
     @Column(nullable = false, length = 20)
-    private String estado;              // ABIERTO | EN_REVISION | CERRADO
+    private String estado; // ABIERTO | EN_REVISION | CERRADO
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;    // ← LocalDateTime no LocalDate
+    private LocalDateTime createdAt; // ← LocalDateTime no LocalDate
 
     @Column(nullable = true)
     private LocalDateTime updatedAt;
@@ -57,8 +58,13 @@ public class Reporte {
 
     @PrePersist
     public void prePersist() {
-        this.estado    = "ABIERTO";
+        this.estado = "ABIERTO";
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate // ← agrega esto
+    public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 }

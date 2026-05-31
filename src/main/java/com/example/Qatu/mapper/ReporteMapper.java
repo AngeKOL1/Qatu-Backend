@@ -11,6 +11,5 @@ public interface ReporteMapper {
     
     @Mapping(target = "vendedorId",     source = "vendedor.id")
     @Mapping(target = "vendedorNombre", source = "vendedor.nombre")
-    @Mapping(target = "estado", ignore = true)
     ReporteResponseDTO toResponseDTO(Reporte reporte);
 }

@@ -6,4 +6,5 @@ import com.example.Qatu.models.Reporte;
 
 public interface ReporteRepo extends GenericRepo<Reporte, Integer> { 
     List<Reporte> findByEstado(String estado);
+    List<Reporte> findByVendedorId(Integer vendedorId);
 }
