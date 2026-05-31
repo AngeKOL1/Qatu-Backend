@@ -54,11 +54,11 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
     public VendedorResponseDTO cambiarVisibilidad(Integer vendedorId, Boolean visible) {
 
         Vendedor vendedor = repo.findById(vendedorId)
-            .orElseThrow(() -> new IllegalArgumentException("Vendedor no encontrado"));
+            .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
 
         // Solo un vendedor ACTIVO puede cambiar su visibilidad
         if (vendedor.getEstado() != EstadoVendedor.ACTIVO) {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                 "Tu cuenta aún no está aprobada. No puedes aparecer en el mapa.");
         }
 

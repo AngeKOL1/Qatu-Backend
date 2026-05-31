@@ -44,7 +44,7 @@ public class ProductoService extends GenericService<Producto, Integer> implement
 
         // Solo vendedores ACTIVOS pueden publicar productos
         if (vendedor.getEstado() != EstadoVendedor.ACTIVO) {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                 "Tu cuenta debe estar activa para publicar productos");
         }
 
@@ -56,11 +56,11 @@ public class ProductoService extends GenericService<Producto, Integer> implement
     @Override
     public ProductoResponseDTO actualizarProducto(Integer vendedorId, Integer productoId, ProductoUpdateDTO dto) {
         Producto producto = repo.findById(productoId)
-            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+            .orElseThrow(() -> new ModelNotFoundException("Producto no encontrado"));
 
         // Verificar que el producto pertenece al vendedor autenticado
         if (!producto.getVendedor().getId().equals(vendedorId)) {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                 "No tienes permiso para editar este producto");
         }
 
@@ -75,11 +75,11 @@ public class ProductoService extends GenericService<Producto, Integer> implement
     @Transactional
     public void eliminarProducto(Integer vendedorId, Integer productoId) {
         Producto producto = repo.findById(productoId)
-            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+            .orElseThrow(() -> new ModelNotFoundException("Producto no encontrado"));
 
         // Verificar que el producto pertenece al vendedor autenticado
         if (!producto.getVendedor().getId().equals(vendedorId)) {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                 "No tienes permiso para eliminar este producto");
         }
 
