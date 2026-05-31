@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Qatu.dto.EstadoActividadDTO;
+import com.example.Qatu.dto.VendedorPerfilDTO;
 import com.example.Qatu.dto.VendedorResponseDTO;
 import com.example.Qatu.mapper.VendedorMapper;
 import com.example.Qatu.models.Vendedor;
@@ -35,9 +36,9 @@ public class VendedorController {
     @GetMapping
     public ResponseEntity<List<VendedorResponseDTO>> listar() {
         List<VendedorResponseDTO> vendedores = vendedorService.findAll()
-            .stream()
-            .map(mapper::toResponseDTO)
-            .toList();
+                .stream()
+                .map(mapper::toResponseDTO)
+                .toList();
         return ResponseEntity.ok(vendedores);
     }
 
@@ -54,8 +55,7 @@ public class VendedorController {
             @RequestHeader("Authorization") String token) {
 
         Integer vendedorId = jwtTokenUtil.getIdUsuarioFromToken(token);
-        VendedorResponseDTO response = 
-            vendedorService.cambiarVisibilidad(vendedorId, dto.getVisible());
+        VendedorResponseDTO response = vendedorService.cambiarVisibilidad(vendedorId, dto.getVisible());
 
         return ResponseEntity.ok(response);
     }
@@ -69,5 +69,11 @@ public class VendedorController {
         Integer vendedorId = jwtTokenUtil.getIdUsuarioFromToken(token);
         vendedorService.actualizarFcmToken(vendedorId, body.get("fcmToken"));
         return ResponseEntity.ok().build();
+    }
+
+    // GET /api/vendedores/{id}/perfil
+    @GetMapping("/{id}/perfil")
+    public ResponseEntity<VendedorPerfilDTO> obtenerPerfil(@PathVariable Integer id) {
+        return ResponseEntity.ok(vendedorService.obtenerPerfil(id));
     }
 }

@@ -113,12 +113,14 @@ public class WebSecurityConfig {
 
                 
                 .requestMatchers("/api/vendedores/mi-**").hasAuthority("VENDEDOR")
+                .requestMatchers("/api/vendedores/{id}/perfil").authenticated()
 
                 // Administración de vendedores y reportes solo para ADMIN
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
 
                 // Para Mapa
                 .requestMatchers("/api/mapa/heatmap").authenticated()
+                .requestMatchers("/api/mapa/vendedores").authenticated()
 
                 // ── Todo lo demás requiere autenticación ─────────────────
                 .anyRequest().authenticated()
