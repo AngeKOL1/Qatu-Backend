@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Qatu.dto.EstadoActividadDTO;
@@ -73,7 +74,11 @@ public class VendedorController {
 
     // GET /api/vendedores/{id}/perfil
     @GetMapping("/{id}/perfil")
-    public ResponseEntity<VendedorPerfilDTO> obtenerPerfil(@PathVariable Integer id) {
-        return ResponseEntity.ok(vendedorService.obtenerPerfil(id));
+    public ResponseEntity<VendedorPerfilDTO> obtenerPerfil(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanio) {
+
+        return ResponseEntity.ok(vendedorService.obtenerPerfil(id, pagina, tamanio));
     }
 }

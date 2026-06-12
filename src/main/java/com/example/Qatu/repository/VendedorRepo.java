@@ -1,7 +1,9 @@
 package com.example.Qatu.repository;
 
-import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.example.Qatu.models.Vendedor;
 import com.example.Qatu.models.enums.EstadoVendedor;
@@ -14,9 +16,11 @@ public interface VendedorRepo extends GenericRepo<Vendedor, Integer> {
     Optional<Vendedor> findByEmail(String email);
 
     // Vendedores por estado (ACTIVO, INACTIVO, SUSPENDIDO)
-    List<Vendedor> findByEstado(EstadoVendedor estado);
+    Page<Vendedor> findByEstado(EstadoVendedor estado, Pageable pageable);
 
     // Vendedores ACTIVOS y visibles en el mapa
-    List<Vendedor> findByEstadoAndVisibleTrue(EstadoVendedor estado);
+    Page<Vendedor> findByEstadoAndVisibleTrue(EstadoVendedor estado, Pageable pageable);
+
+    Page<Vendedor> findAll(Pageable pageable);
 
 }

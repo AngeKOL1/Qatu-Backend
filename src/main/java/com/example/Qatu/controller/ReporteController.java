@@ -1,7 +1,5 @@
 package com.example.Qatu.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,8 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ReporteRequestDTO;
 import com.example.Qatu.dto.ReporteResponseDTO;
 import com.example.Qatu.security.JwtTokenUtil;
@@ -40,10 +40,14 @@ public class ReporteController {
 
     // GET /api/reportes/mis-reportes — vendedor ve sus reportes
     @GetMapping("/mis-reportes")
-    public ResponseEntity<List<ReporteResponseDTO>> listarMisReportes(
-            @RequestHeader("Authorization") String token) {
+    public ResponseEntity<PaginaResponseDTO<ReporteResponseDTO>> listarMisReportes(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanio) {
 
         Integer vendedorId = jwtTokenUtil.getIdUsuarioFromToken(token);
-        return ResponseEntity.ok(reporteService.listarMisReportes(vendedorId));
+        return ResponseEntity.ok(
+                reporteService.listarMisReportes(vendedorId, pagina, tamanio));
     }
+
 }

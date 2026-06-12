@@ -1,8 +1,9 @@
 package com.example.Qatu.job;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +33,10 @@ public class InactividadVendedorJob {
 
         LocalDateTime limite = LocalDateTime.now().minusMinutes(10);
 
-        List<Vendedor> vendedoresActivos = vendedorRepo
-            .findByEstado(EstadoVendedor.ACTIVO);
+        Page<Vendedor> vendedoresActivos = vendedorRepo
+            .findByEstado(EstadoVendedor.ACTIVO, Pageable.unpaged());
 
-        for (Vendedor vendedor : vendedoresActivos) {
+        vendedoresActivos.forEach(vendedor -> {
             ubicacionRepo.findByVendedorIdAndActivoTrue(vendedor.getId())
                 .ifPresent(ubicacion -> {
                     if (ubicacion.getTimestamp().isBefore(limite)) {
@@ -49,6 +50,6 @@ public class InactividadVendedorJob {
                             vendedor.getId());
                     }
                 });
-        }
+        });
     }
 }

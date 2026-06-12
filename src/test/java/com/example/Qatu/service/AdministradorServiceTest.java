@@ -2,6 +2,7 @@ package com.example.Qatu.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -14,7 +15,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ReporteResponseDTO;
 import com.example.Qatu.dto.VendedorResponseDTO;
 import com.example.Qatu.exception.ModelNotFoundException;
@@ -32,12 +37,18 @@ import com.example.Qatu.service.impl.WebSocketService;
 @ExtendWith(MockitoExtension.class)
 class AdministradorServiceTest {
 
-    @Mock private VendedorRepo vendedorRepo;
-    @Mock private VendedorMapper vendedorMapper;
-    @Mock private ReporteRepo reporteRepo;
-    @Mock private ReporteMapper reporteMapper;
-    @Mock private WebSocketService webSocketService;
-    @Mock private AdministradorRepo repo;
+    @Mock
+    private VendedorRepo vendedorRepo;
+    @Mock
+    private VendedorMapper vendedorMapper;
+    @Mock
+    private ReporteRepo reporteRepo;
+    @Mock
+    private ReporteMapper reporteMapper;
+    @Mock
+    private WebSocketService webSocketService;
+    @Mock
+    private AdministradorRepo repo;
 
     @InjectMocks
     private AdministradorService administradorService;
@@ -78,45 +89,45 @@ class AdministradorServiceTest {
     @Test
     @DisplayName("Lista vendedores filtrando por estado PENDIENTE")
     void listarVendedores_conEstado() {
-        when(vendedorRepo.findByEstado(EstadoVendedor.PENDIENTE))
-            .thenReturn(List.of(vendedor));
-        when(vendedorMapper.toResponseDTO(vendedor))
-            .thenReturn(vendedorResponseDTO);
+        Page<Vendedor> page = new PageImpl<>(List.of(vendedor));
+        when(vendedorRepo.findByEstado(eq(EstadoVendedor.PENDIENTE), any(Pageable.class)))
+                .thenReturn(page);
+        when(vendedorMapper.toResponseDTO(vendedor)).thenReturn(vendedorResponseDTO);
 
-        List<VendedorResponseDTO> resultado =
-            administradorService.listarVendedores(EstadoVendedor.PENDIENTE);
+        PaginaResponseDTO<VendedorResponseDTO> resultado = administradorService
+                .listarVendedores(EstadoVendedor.PENDIENTE, 0, 20);
 
-        assertEquals(1, resultado.size());
-        assertEquals("Carlos Quispe", resultado.get(0).getNombre());
-        verify(vendedorRepo, times(1)).findByEstado(EstadoVendedor.PENDIENTE);
-        verify(vendedorRepo, never()).findAll();
+        assertEquals(1, resultado.getContenido().size());
+        assertEquals("Carlos Quispe", resultado.getContenido().get(0).getNombre());
+        verify(vendedorRepo, times(1))
+                .findByEstado(eq(EstadoVendedor.PENDIENTE), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Lista todos los vendedores cuando el estado es null")
     void listarVendedores_sinEstado() {
-        when(vendedorRepo.findAll()).thenReturn(List.of(vendedor));
-        when(vendedorMapper.toResponseDTO(vendedor))
-            .thenReturn(vendedorResponseDTO);
+        Page<Vendedor> page = new PageImpl<>(List.of(vendedor));
+        when(vendedorRepo.findAll(any(Pageable.class))).thenReturn(page);
+        when(vendedorMapper.toResponseDTO(vendedor)).thenReturn(vendedorResponseDTO);
 
-        List<VendedorResponseDTO> resultado =
-            administradorService.listarVendedores(null);
+        PaginaResponseDTO<VendedorResponseDTO> resultado = administradorService.listarVendedores(null, 0, 20);
 
-        assertEquals(1, resultado.size());
-        verify(vendedorRepo, times(1)).findAll();
-        verify(vendedorRepo, never()).findByEstado(any());
+        assertEquals(1, resultado.getContenido().size());
+        verify(vendedorRepo, times(1)).findAll(any(Pageable.class));
+        verify(vendedorRepo, never()).findByEstado(any(), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Devuelve lista vacía si no hay vendedores con ese estado")
     void listarVendedores_listaVacia() {
-        when(vendedorRepo.findByEstado(EstadoVendedor.SUSPENDIDO))
-            .thenReturn(List.of());
+        Page<Vendedor> page = new PageImpl<>(List.of());
+        when(vendedorRepo.findByEstado(eq(EstadoVendedor.SUSPENDIDO), any(Pageable.class)))
+                .thenReturn(page);
 
-        List<VendedorResponseDTO> resultado =
-            administradorService.listarVendedores(EstadoVendedor.SUSPENDIDO);
+        PaginaResponseDTO<VendedorResponseDTO> resultado = administradorService
+                .listarVendedores(EstadoVendedor.SUSPENDIDO, 0, 20);
 
-        assertTrue(resultado.isEmpty());
+        assertTrue(resultado.getContenido().isEmpty());
     }
 
     // ══ cambiarEstadoVendedor ═════════════════════════════════════════════════
@@ -130,8 +141,7 @@ class AdministradorServiceTest {
         when(vendedorRepo.save(any())).thenReturn(vendedor);
         when(vendedorMapper.toResponseDTO(any())).thenReturn(vendedorResponseDTO);
 
-        VendedorResponseDTO resultado =
-            administradorService.cambiarEstadoVendedor(1, EstadoVendedor.ACTIVO);
+        VendedorResponseDTO resultado = administradorService.cambiarEstadoVendedor(1, EstadoVendedor.ACTIVO);
 
         assertNotNull(resultado);
         assertEquals(EstadoVendedor.ACTIVO, vendedor.getEstado());
@@ -164,9 +174,8 @@ class AdministradorServiceTest {
         when(vendedorRepo.findById(99)).thenReturn(Optional.empty());
 
         ModelNotFoundException ex = assertThrows(
-            ModelNotFoundException.class,
-            () -> administradorService.cambiarEstadoVendedor(99, EstadoVendedor.ACTIVO)
-        );
+                ModelNotFoundException.class,
+                () -> administradorService.cambiarEstadoVendedor(99, EstadoVendedor.ACTIVO));
 
         assertEquals("Vendedor no encontrado", ex.getMessage());
         verify(vendedorRepo, never()).save(any());
@@ -179,9 +188,8 @@ class AdministradorServiceTest {
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedor));
 
         IllegalArgumentException ex = assertThrows(
-            IllegalArgumentException.class,
-            () -> administradorService.cambiarEstadoVendedor(1, EstadoVendedor.SUSPENDIDO)
-        );
+                IllegalArgumentException.class,
+                () -> administradorService.cambiarEstadoVendedor(1, EstadoVendedor.SUSPENDIDO));
 
         assertEquals("No se puede cambiar de PENDIENTE a SUSPENDIDO", ex.getMessage());
         verify(vendedorRepo, never()).save(any());
@@ -208,41 +216,43 @@ class AdministradorServiceTest {
     @Test
     @DisplayName("Lista reportes filtrando por estado ABIERTO")
     void listarReportes_conEstado() {
-        when(reporteRepo.findByEstado("ABIERTO")).thenReturn(List.of(reporte));
+        Page<Reporte> page = new PageImpl<>(List.of(reporte));
+        when(reporteRepo.findByEstado(eq("ABIERTO"), any(Pageable.class)))
+                .thenReturn(page);
         when(reporteMapper.toResponseDTO(reporte)).thenReturn(reporteResponseDTO);
 
-        List<ReporteResponseDTO> resultado =
-            administradorService.listarReportes("ABIERTO");
+        PaginaResponseDTO<ReporteResponseDTO> resultado = administradorService.listarReportes("ABIERTO", 0, 20);
 
-        assertEquals(1, resultado.size());
-        assertEquals("ABIERTO", resultado.get(0).getEstado());
-        verify(reporteRepo, times(1)).findByEstado("ABIERTO");
-        verify(reporteRepo, never()).findAll();
+        assertEquals(1, resultado.getContenido().size());
+        assertEquals("ABIERTO", resultado.getContenido().get(0).getEstado());
+        verify(reporteRepo, times(1))
+                .findByEstado(eq("ABIERTO"), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Lista todos los reportes cuando el estado es null")
     void listarReportes_sinEstado() {
-        when(reporteRepo.findAll()).thenReturn(List.of(reporte));
+        Page<Reporte> page = new PageImpl<>(List.of(reporte));
+        when(reporteRepo.findAll(any(Pageable.class))).thenReturn(page);
         when(reporteMapper.toResponseDTO(reporte)).thenReturn(reporteResponseDTO);
 
-        List<ReporteResponseDTO> resultado =
-            administradorService.listarReportes(null);
+        PaginaResponseDTO<ReporteResponseDTO> resultado = administradorService.listarReportes(null, 0, 20);
 
-        assertEquals(1, resultado.size());
-        verify(reporteRepo, times(1)).findAll();
-        verify(reporteRepo, never()).findByEstado(any());
+        assertEquals(1, resultado.getContenido().size());
+        verify(reporteRepo, times(1)).findAll(any(Pageable.class));
+        verify(reporteRepo, never()).findByEstado(any(), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Devuelve lista vacía si no hay reportes con ese estado")
     void listarReportes_listaVacia() {
-        when(reporteRepo.findByEstado("CERRADO")).thenReturn(List.of());
+        Page<Reporte> page = new PageImpl<>(List.of());
+        when(reporteRepo.findByEstado(eq("CERRADO"), any(Pageable.class)))
+                .thenReturn(page);
 
-        List<ReporteResponseDTO> resultado =
-            administradorService.listarReportes("CERRADO");
+        PaginaResponseDTO<ReporteResponseDTO> resultado = administradorService.listarReportes("CERRADO", 0, 20);
 
-        assertTrue(resultado.isEmpty());
+        assertTrue(resultado.getContenido().isEmpty());
     }
 
     // ══ actualizarReporte ═════════════════════════════════════════════════════
@@ -254,8 +264,7 @@ class AdministradorServiceTest {
         when(reporteRepo.save(any())).thenReturn(reporte);
         when(reporteMapper.toResponseDTO(any())).thenReturn(reporteResponseDTO);
 
-        ReporteResponseDTO resultado =
-            administradorService.actualizarReporte(1, "CERRADO", "Problema resuelto.");
+        ReporteResponseDTO resultado = administradorService.actualizarReporte(1, "CERRADO", "Problema resuelto.");
 
         assertEquals("CERRADO", reporte.getEstado());
         assertEquals("Problema resuelto.", reporte.getRespuesta());
@@ -297,9 +306,8 @@ class AdministradorServiceTest {
         when(reporteRepo.findById(99)).thenReturn(Optional.empty());
 
         ModelNotFoundException ex = assertThrows(
-            ModelNotFoundException.class,
-            () -> administradorService.actualizarReporte(99, "CERRADO", "Respuesta")
-        );
+                ModelNotFoundException.class,
+                () -> administradorService.actualizarReporte(99, "CERRADO", "Respuesta"));
 
         assertEquals("Reporte no encontrado", ex.getMessage());
         verify(reporteRepo, never()).save(any());

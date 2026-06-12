@@ -1,12 +1,11 @@
 package com.example.Qatu.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.Qatu.dto.ActualizarReporteDTO;
 import com.example.Qatu.dto.CambiarEstadoVendedorDTO;
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ReporteResponseDTO;
 import com.example.Qatu.dto.UmbralRequestDTO;
 import com.example.Qatu.dto.VendedorResponseDTO;
@@ -29,11 +28,13 @@ public class AdministradorController {
 
     // GET /api/admin/vendedores?estado=PENDIENTE
     @GetMapping("/vendedores")
-    public ResponseEntity<List<VendedorResponseDTO>> listarVendedores(
-            @RequestParam(required = false) EstadoVendedor estado) {
+    public ResponseEntity<PaginaResponseDTO<VendedorResponseDTO>> listarVendedores(
+            @RequestParam(required = false) EstadoVendedor estado,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
 
         return ResponseEntity.ok(
-            administradorService.listarVendedores(estado));
+                administradorService.listarVendedores(estado, pagina, tamanio));
     }
 
     // PATCH /api/admin/vendedores/{id}/estado
@@ -43,18 +44,20 @@ public class AdministradorController {
             @Valid @RequestBody CambiarEstadoVendedorDTO dto) {
 
         return ResponseEntity.ok(
-            administradorService.cambiarEstadoVendedor(id, dto.getNuevoEstado()));
+                administradorService.cambiarEstadoVendedor(id, dto.getNuevoEstado()));
     }
 
     // ── Reportes ──────────────────────────────────────────────────────────────
 
     // GET /api/admin/reportes?estado=ABIERTO
     @GetMapping("/reportes")
-    public ResponseEntity<List<ReporteResponseDTO>> listarReportes(
-            @RequestParam(required = false) String estado) {
+    public ResponseEntity<PaginaResponseDTO<ReporteResponseDTO>> listarReportes(
+            @RequestParam(required = false) String estado,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
 
         return ResponseEntity.ok(
-            administradorService.listarReportes(estado));
+                administradorService.listarReportes(estado, pagina, tamanio));
     }
 
     // PATCH /api/admin/reportes/{id}
@@ -64,8 +67,8 @@ public class AdministradorController {
             @Valid @RequestBody ActualizarReporteDTO dto) {
 
         return ResponseEntity.ok(
-            administradorService.actualizarReporte(
-                id, dto.getEstado(), dto.getRespuesta()));
+                administradorService.actualizarReporte(
+                        id, dto.getEstado(), dto.getRespuesta()));
     }
 
     // PATCH /api/admin/heatmap/umbral
@@ -76,5 +79,5 @@ public class AdministradorController {
         heatmapService.actualizarUmbral(dto.getUmbralRojo(), dto.getUmbralAmarillo());
         return ResponseEntity.ok().build();
     }
-    
+
 }

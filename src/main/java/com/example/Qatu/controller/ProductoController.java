@@ -1,7 +1,5 @@
 package com.example.Qatu.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,8 +10,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ProductoRegisterDTO;
 import com.example.Qatu.dto.ProductoResponseDTO;
 import com.example.Qatu.dto.ProductoUpdateDTO;
@@ -33,11 +33,13 @@ public class ProductoController {
 
     // GET /api/vendedores/{id}/productos — público
     @GetMapping("/{id}/productos")
-    public ResponseEntity<List<ProductoResponseDTO>> listar(
-            @PathVariable Integer id) {
+    public ResponseEntity<PaginaResponseDTO<ProductoResponseDTO>> listarProductos(
+            @PathVariable Integer id,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanio) {
 
         return ResponseEntity.ok(
-                productoService.listarProductosActivos(id));
+                productoService.listarProductosActivos(id, pagina, tamanio));
     }
 
     // POST /api/vendedores/mis-productos — solo VENDEDOR

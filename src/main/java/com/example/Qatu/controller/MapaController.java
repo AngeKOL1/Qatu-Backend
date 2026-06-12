@@ -1,7 +1,5 @@
 package com.example.Qatu.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Qatu.dto.HeatmapResponseDTO;
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.VendedorMapaDTO;
 import com.example.Qatu.service.IVendedorService;
 import com.example.Qatu.service.impl.HeatmapService;
@@ -31,10 +30,13 @@ public class MapaController {
 
     // GET /api/mapa/vendedores?categoria=COMIDA
     @GetMapping("/vendedores")
-    public ResponseEntity<List<VendedorMapaDTO>> listarVendedores(
-            @RequestParam(required = false) String categoria) {
+    public ResponseEntity<PaginaResponseDTO<VendedorMapaDTO>> listarVendedores(
+            @RequestParam(required = false) String categoria,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "100") int tamanio) {
 
         return ResponseEntity.ok(
-            vendedorService.listarVendedoresActivosEnMapa(categoria));
+                vendedorService.listarVendedoresActivosEnMapa(
+                        categoria, pagina, tamanio));
     }
 }

@@ -2,9 +2,14 @@ package com.example.Qatu.service.impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ProductoResponseDTO;
 import com.example.Qatu.dto.VendedorMapaDTO;
 import com.example.Qatu.dto.VendedorPerfilDTO;
@@ -93,28 +98,39 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
     }
 
     @Override
-    public List<VendedorMapaDTO> listarVendedoresActivosEnMapa(String categoria) {
-        List<Vendedor> vendedores = repo
-                .findByEstadoAndVisibleTrue(EstadoVendedor.ACTIVO);
+    public PaginaResponseDTO<VendedorMapaDTO> listarVendedoresActivosEnMapa(
+            String categoria, int pagina, int tamanio) {
 
-        if (categoria != null && !categoria.isBlank()) {
-            vendedores = vendedores.stream()
-                    .filter(v -> v.getCategoria() != null &&
-                            v.getCategoria().getNombre().equalsIgnoreCase(categoria))
-                    .toList();
-        }
+        Pageable pageable = PageRequest.of(pagina, tamanio);
 
-        return vendedores.stream()
+        Page<Vendedor> page = repo
+                .findByEstadoAndVisibleTrue(EstadoVendedor.ACTIVO, pageable);
+
+        // Filtrar por categoría si se especifica
+        List<VendedorMapaDTO> contenido = page.getContent().stream()
+                .filter(v -> categoria == null || categoria.isBlank() ||
+                        (v.getCategoria() != null &&
+                                v.getCategoria().getNombre().equalsIgnoreCase(categoria)))
                 .map(this::toMapaDTOConUbicacion)
                 .toList();
+
+        return PaginaResponseDTO.<VendedorMapaDTO>builder()
+                .contenido(contenido)
+                .paginaActual(page.getNumber())
+                .totalPaginas(page.getTotalPages())
+                .totalElementos(page.getTotalElements())
+                .tamanioPagina(page.getSize())
+                .esUltima(page.isLast())
+                .esPrimera(page.isFirst())
+                .build();
     }
 
     @Override
-    public VendedorPerfilDTO obtenerPerfil(Integer vendedorId) {
+    public VendedorPerfilDTO obtenerPerfil(Integer vendedorId, int pagina, int tamanio) {
         Vendedor vendedor = repo.findById(vendedorId)
                 .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
 
-        return toPerfilDTOCompleto(vendedor);
+        return toPerfilDTOCompleto(vendedor, pagina, tamanio);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -131,7 +147,7 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
         return dto;
     }
 
-    private VendedorPerfilDTO toPerfilDTOCompleto(Vendedor v) {
+    private VendedorPerfilDTO toPerfilDTOCompleto(Vendedor v, int pagina, int tamanio) {
         VendedorPerfilDTO dto = mapper.toPerfilDTO(v);
 
         ubicacionRepo.findByVendedorIdAndActivoTrue(v.getId())
@@ -140,8 +156,12 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
                     dto.setLng(GeoUtils.getLng(u.getCoordenada()));
                 });
 
+        Pageable pageable = PageRequest.of(pagina, tamanio,
+                Sort.by("fechaCreacion").descending());
+
         List<ProductoResponseDTO> productos = productoRepo
-                .findByVendedorIdAndActivoTrue(v.getId())
+                .findByVendedorIdAndActivoTrue(v.getId(), pageable)
+                .getContent()
                 .stream()
                 .map(productoMapper::toResponseDTO)
                 .toList();

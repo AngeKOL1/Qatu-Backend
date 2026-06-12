@@ -2,6 +2,8 @@ package com.example.Qatu.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
@@ -15,7 +17,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.SugerenciaResponseDTO;
 import com.example.Qatu.exception.ModelNotFoundException;
 import com.example.Qatu.mapper.SugerenciaMapper;
@@ -36,12 +42,18 @@ import com.example.Qatu.service.impl.SugerenciaDeReasignacionService;
 @ExtendWith(MockitoExtension.class)
 class SugerenciaDeReasignacionServiceTest {
 
-    @Mock private SugerenciaReasignacionRepo repo;
-    @Mock private VendedorRepo vendedorRepo;
-    @Mock private ZonaRepo zonaRepo;
-    @Mock private UbicacionRepo ubicacionRepo;
-    @Mock private SugerenciaMapper mapper;
-    @Mock private FcmService fcmService;
+    @Mock
+    private SugerenciaReasignacionRepo repo;
+    @Mock
+    private VendedorRepo vendedorRepo;
+    @Mock
+    private ZonaRepo zonaRepo;
+    @Mock
+    private UbicacionRepo ubicacionRepo;
+    @Mock
+    private SugerenciaMapper mapper;
+    @Mock
+    private FcmService fcmService;
 
     @InjectMocks
     private SugerenciaDeReasignacionService sugerenciaService;
@@ -103,22 +115,21 @@ class SugerenciaDeReasignacionServiceTest {
     void evaluar_exitoso_carrito() {
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedorCarrito));
         when(repo.findTopByVendedorIdAndEstadoOrderByFechaEnvioDesc(1, EstadoSugerencia.ENVIADA))
-            .thenReturn(Optional.empty()); // sin cooldown
+                .thenReturn(Optional.empty()); // sin cooldown
         when(zonaRepo.findZonasReasignacionDisponibles(LAT, LNG))
-            .thenReturn(List.of(zona));
+                .thenReturn(List.of(zona));
         when(ubicacionRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(Optional.of(ubicacion));
+                .thenReturn(Optional.of(ubicacion));
         when(repo.save(any())).thenReturn(sugerencia);
 
         sugerenciaService.evaluarYEnviarSugerencia(1, LAT, LNG);
 
         verify(repo, times(1)).save(any(SugerenciaReasignacion.class));
         verify(fcmService, times(1)).enviarNotificacion(
-            eq("token-fcm-test"),
-            eq("Zona congestionada"),
-            contains("Zona sur habilitada"),
-            eq("SUGERENCIA_REASIGNACION")
-        );
+                eq("token-fcm-test"),
+                eq("Zona congestionada"),
+                contains("Zona sur habilitada"),
+                eq("SUGERENCIA_REASIGNACION"));
     }
 
     @Test
@@ -128,11 +139,11 @@ class SugerenciaDeReasignacionServiceTest {
 
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedorCarrito));
         when(repo.findTopByVendedorIdAndEstadoOrderByFechaEnvioDesc(1, EstadoSugerencia.ENVIADA))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
         when(zonaRepo.findZonasReasignacionDisponibles(LAT, LNG))
-            .thenReturn(List.of(zona));
+                .thenReturn(List.of(zona));
         when(ubicacionRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(Optional.of(ubicacion));
+                .thenReturn(Optional.of(ubicacion));
         when(repo.save(any())).thenReturn(sugerencia);
 
         sugerenciaService.evaluarYEnviarSugerencia(1, LAT, LNG);
@@ -160,7 +171,7 @@ class SugerenciaDeReasignacionServiceTest {
 
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedorCarrito));
         when(repo.findTopByVendedorIdAndEstadoOrderByFechaEnvioDesc(1, EstadoSugerencia.ENVIADA))
-            .thenReturn(Optional.of(sugerenciaReciente));
+                .thenReturn(Optional.of(sugerenciaReciente));
 
         sugerenciaService.evaluarYEnviarSugerencia(1, LAT, LNG);
 
@@ -177,11 +188,11 @@ class SugerenciaDeReasignacionServiceTest {
 
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedorCarrito));
         when(repo.findTopByVendedorIdAndEstadoOrderByFechaEnvioDesc(1, EstadoSugerencia.ENVIADA))
-            .thenReturn(Optional.of(sugerenciaAntigua));
+                .thenReturn(Optional.of(sugerenciaAntigua));
         when(zonaRepo.findZonasReasignacionDisponibles(LAT, LNG))
-            .thenReturn(List.of(zona));
+                .thenReturn(List.of(zona));
         when(ubicacionRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(Optional.of(ubicacion));
+                .thenReturn(Optional.of(ubicacion));
         when(repo.save(any())).thenReturn(sugerencia);
 
         sugerenciaService.evaluarYEnviarSugerencia(1, LAT, LNG);
@@ -194,9 +205,9 @@ class SugerenciaDeReasignacionServiceTest {
     void evaluar_sinZonasDisponibles_noEnvia() {
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedorCarrito));
         when(repo.findTopByVendedorIdAndEstadoOrderByFechaEnvioDesc(1, EstadoSugerencia.ENVIADA))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
         when(zonaRepo.findZonasReasignacionDisponibles(LAT, LNG))
-            .thenReturn(List.of());
+                .thenReturn(List.of());
 
         sugerenciaService.evaluarYEnviarSugerencia(1, LAT, LNG);
 
@@ -211,11 +222,11 @@ class SugerenciaDeReasignacionServiceTest {
 
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedorCarrito));
         when(repo.findTopByVendedorIdAndEstadoOrderByFechaEnvioDesc(1, EstadoSugerencia.ENVIADA))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
         when(zonaRepo.findZonasReasignacionDisponibles(LAT, LNG))
-            .thenReturn(List.of(zona));
+                .thenReturn(List.of(zona));
         when(ubicacionRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(Optional.of(ubicacion));
+                .thenReturn(Optional.of(ubicacion));
         when(repo.save(any())).thenReturn(sugerencia);
 
         sugerenciaService.evaluarYEnviarSugerencia(1, LAT, LNG);
@@ -231,9 +242,8 @@ class SugerenciaDeReasignacionServiceTest {
         when(vendedorRepo.findById(99)).thenReturn(Optional.empty());
 
         ModelNotFoundException ex = assertThrows(
-            ModelNotFoundException.class,
-            () -> sugerenciaService.evaluarYEnviarSugerencia(99, LAT, LNG)
-        );
+                ModelNotFoundException.class,
+                () -> sugerenciaService.evaluarYEnviarSugerencia(99, LAT, LNG));
 
         assertEquals("Vendedor no encontrado", ex.getMessage());
         verify(repo, never()).save(any());
@@ -248,8 +258,7 @@ class SugerenciaDeReasignacionServiceTest {
         when(repo.save(any())).thenReturn(sugerencia);
         when(mapper.toResponseDTO(any())).thenReturn(responseDTO);
 
-        SugerenciaResponseDTO resultado =
-            sugerenciaService.responderSugerencia(1, 1, EstadoSugerencia.ACEPTADA);
+        SugerenciaResponseDTO resultado = sugerenciaService.responderSugerencia(1, 1, EstadoSugerencia.ACEPTADA);
 
         assertNotNull(resultado);
         assertEquals(EstadoSugerencia.ACEPTADA, sugerencia.getEstado());
@@ -277,9 +286,8 @@ class SugerenciaDeReasignacionServiceTest {
         when(repo.findById(99)).thenReturn(Optional.empty());
 
         ModelNotFoundException ex = assertThrows(
-            ModelNotFoundException.class,
-            () -> sugerenciaService.responderSugerencia(99, 1, EstadoSugerencia.ACEPTADA)
-        );
+                ModelNotFoundException.class,
+                () -> sugerenciaService.responderSugerencia(99, 1, EstadoSugerencia.ACEPTADA));
 
         assertEquals("Sugerencia no encontrada", ex.getMessage());
         verify(repo, never()).save(any());
@@ -292,12 +300,11 @@ class SugerenciaDeReasignacionServiceTest {
 
         // Vendedor 2 intenta responder sugerencia del vendedor 1
         IllegalArgumentException ex = assertThrows(
-            IllegalArgumentException.class,
-            () -> sugerenciaService.responderSugerencia(1, 2, EstadoSugerencia.ACEPTADA)
-        );
+                IllegalArgumentException.class,
+                () -> sugerenciaService.responderSugerencia(1, 2, EstadoSugerencia.ACEPTADA));
 
         assertEquals("No tienes permiso para responder esta sugerencia",
-            ex.getMessage());
+                ex.getMessage());
         verify(repo, never()).save(any());
     }
 
@@ -308,9 +315,8 @@ class SugerenciaDeReasignacionServiceTest {
         when(repo.findById(1)).thenReturn(Optional.of(sugerencia));
 
         IllegalArgumentException ex = assertThrows(
-            IllegalArgumentException.class,
-            () -> sugerenciaService.responderSugerencia(1, 1, EstadoSugerencia.IGNORADA)
-        );
+                IllegalArgumentException.class,
+                () -> sugerenciaService.responderSugerencia(1, 1, EstadoSugerencia.IGNORADA));
 
         assertEquals("Esta sugerencia ya fue respondida", ex.getMessage());
         verify(repo, never()).save(any());
@@ -321,26 +327,27 @@ class SugerenciaDeReasignacionServiceTest {
     @Test
     @DisplayName("Lista el historial de sugerencias del vendedor correctamente")
     void listar_exitoso() {
-        when(repo.findByVendedorIdOrderByFechaEnvioDesc(1))
-            .thenReturn(List.of(sugerencia));
+        Page<SugerenciaReasignacion> page = new PageImpl<>(List.of(sugerencia));
+        when(repo.findByVendedorIdOrderByFechaEnvioDesc(eq(1), any(Pageable.class)))
+                .thenReturn(page);
         when(mapper.toResponseDTO(sugerencia)).thenReturn(responseDTO);
 
-        List<SugerenciaResponseDTO> resultado =
-            sugerenciaService.listarPorVendedor(1);
+        PaginaResponseDTO<SugerenciaResponseDTO> resultado = sugerenciaService.listarPorVendedor(1, 0, 10);
 
-        assertEquals(1, resultado.size());
-        verify(repo, times(1)).findByVendedorIdOrderByFechaEnvioDesc(1);
+        assertEquals(1, resultado.getContenido().size());
+        verify(repo, times(1))
+                .findByVendedorIdOrderByFechaEnvioDesc(eq(1), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Devuelve lista vacía si el vendedor no tiene sugerencias")
     void listar_listaVacia() {
-        when(repo.findByVendedorIdOrderByFechaEnvioDesc(1))
-            .thenReturn(List.of());
+        Page<SugerenciaReasignacion> page = new PageImpl<>(List.of());
+        when(repo.findByVendedorIdOrderByFechaEnvioDesc(eq(1), any(Pageable.class)))
+                .thenReturn(page);
 
-        List<SugerenciaResponseDTO> resultado =
-            sugerenciaService.listarPorVendedor(1);
+        PaginaResponseDTO<SugerenciaResponseDTO> resultado = sugerenciaService.listarPorVendedor(1, 0, 10);
 
-        assertTrue(resultado.isEmpty());
+        assertTrue(resultado.getContenido().isEmpty());
     }
 }

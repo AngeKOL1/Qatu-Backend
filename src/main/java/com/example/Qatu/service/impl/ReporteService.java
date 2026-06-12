@@ -2,8 +2,13 @@ package com.example.Qatu.service.impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ReporteRequestDTO;
 import com.example.Qatu.dto.ReporteResponseDTO;
 import com.example.Qatu.exception.ModelNotFoundException;
@@ -14,6 +19,7 @@ import com.example.Qatu.models.enums.EstadoVendedor;
 import com.example.Qatu.repository.ReporteRepo;
 import com.example.Qatu.repository.VendedorRepo;
 import com.example.Qatu.service.IReporteService;
+import com.example.Qatu.util.PaginacionUtils;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -54,11 +60,16 @@ public class ReporteService extends GenericService<Reporte, Integer> implements 
 
     @Override
     // Ver mis reportes
-    public List<ReporteResponseDTO> listarMisReportes(Integer vendedorId) {
-        return repo.findByVendedorId(vendedorId)
-                .stream()
-                .map(reporteMapper::toResponseDTO)
-                .toList();
+    public PaginaResponseDTO<ReporteResponseDTO> listarMisReportes(
+            Integer vendedorId, int pagina, int tamanio) {
+
+        Pageable pageable = PageRequest.of(pagina, tamanio,
+                Sort.by("createdAt").descending());
+
+        Page<Reporte> page = repo.findByVendedorId(vendedorId, pageable);
+
+        return PaginacionUtils.construir(
+                page.map(reporteMapper::toResponseDTO));
     }
 
 }

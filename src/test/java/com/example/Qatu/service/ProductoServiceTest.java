@@ -2,6 +2,8 @@ package com.example.Qatu.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -14,7 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ProductoRegisterDTO;
 import com.example.Qatu.dto.ProductoResponseDTO;
 import com.example.Qatu.dto.ProductoUpdateDTO;
@@ -29,9 +35,12 @@ import com.example.Qatu.service.impl.ProductoService;
 @ExtendWith(MockitoExtension.class)
 class ProductoServiceTest {
 
-    @Mock private ProductoRepo productoRepo;
-    @Mock private VendedorRepo vendedorRepo;
-    @Mock private ProductoMapper productoMapper;
+    @Mock
+    private ProductoRepo productoRepo;
+    @Mock
+    private VendedorRepo vendedorRepo;
+    @Mock
+    private ProductoMapper productoMapper;
 
     @InjectMocks
     private ProductoService productoService;
@@ -83,47 +92,42 @@ class ProductoServiceTest {
     @Test
     @DisplayName("Lista productos activos de un vendedor correctamente")
     void listarProductos_exitoso() {
-        when(productoRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(List.of(producto));
-        when(productoMapper.toResponseDTO(producto))
-            .thenReturn(responseDTO);
+        Page<Producto> page = new PageImpl<>(List.of(producto));
+        when(productoRepo.findByVendedorIdAndActivoTrue(eq(1), any(Pageable.class)))
+                .thenReturn(page);
+        when(productoMapper.toResponseDTO(producto)).thenReturn(responseDTO);
 
-        List<ProductoResponseDTO> resultado =
-            productoService.listarProductosActivos(1);
+        PaginaResponseDTO<ProductoResponseDTO> resultado = productoService.listarProductosActivos(1, 0, 10);
 
-        assertEquals(1, resultado.size());
-        assertEquals("Jugo de maracuyá", resultado.get(0).getNombre());
-        verify(productoRepo, times(1)).findByVendedorIdAndActivoTrue(1);
+        assertEquals(1, resultado.getContenido().size());
+        assertEquals("Jugo de maracuyá", resultado.getContenido().get(0).getNombre());
+        verify(productoRepo, times(1))
+                .findByVendedorIdAndActivoTrue(eq(1), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Devuelve lista vacía si el vendedor no tiene productos activos")
     void listarProductos_listaVacia() {
-        when(productoRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(List.of());
+        Page<Producto> page = new PageImpl<>(List.of());
+        when(productoRepo.findByVendedorIdAndActivoTrue(eq(1), any(Pageable.class)))
+                .thenReturn(page);
 
-        List<ProductoResponseDTO> resultado =
-            productoService.listarProductosActivos(1);
+        PaginaResponseDTO<ProductoResponseDTO> resultado = productoService.listarProductosActivos(1, 0, 10);
 
-        assertTrue(resultado.isEmpty());
+        assertTrue(resultado.getContenido().isEmpty());
     }
 
     @Test
     @DisplayName("No devuelve productos inactivos en el listado público")
     void listarProductos_noDevuelveInactivos() {
-        Producto inactivo = new Producto();
-        inactivo.setId(2);
-        inactivo.setActivo(false);
-        inactivo.setVendedor(vendedor);
+        Page<Producto> page = new PageImpl<>(List.of(producto));
+        when(productoRepo.findByVendedorIdAndActivoTrue(eq(1), any(Pageable.class)))
+                .thenReturn(page);
+        when(productoMapper.toResponseDTO(producto)).thenReturn(responseDTO);
 
-        // findByVendedorIdAndActivoTrue solo devuelve activos — inactivo no aparece
-        when(productoRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(List.of(producto)); // solo el activo
+        PaginaResponseDTO<ProductoResponseDTO> resultado = productoService.listarProductosActivos(1, 0, 10);
 
-        List<ProductoResponseDTO> resultado =
-            productoService.listarProductosActivos(1);
-
-        assertEquals(1, resultado.size());
+        assertEquals(1, resultado.getContenido().size());
         verify(productoRepo, never()).findByVendedorId(any());
     }
 
@@ -137,8 +141,7 @@ class ProductoServiceTest {
         when(productoRepo.save(any())).thenReturn(producto);
         when(productoMapper.toResponseDTO(producto)).thenReturn(responseDTO);
 
-        ProductoResponseDTO resultado =
-            productoService.crearProducto(1, registerDTO);
+        ProductoResponseDTO resultado = productoService.crearProducto(1, registerDTO);
 
         assertNotNull(resultado);
         assertEquals("Jugo de maracuyá", resultado.getNombre());
@@ -157,10 +160,8 @@ class ProductoServiceTest {
         productoService.crearProducto(1, registerDTO);
 
         // Verificar que el vendedor fue asignado al producto antes de guardar
-        verify(productoRepo).save(argThat(p ->
-            p.getVendedor() != null &&
-            p.getVendedor().getId().equals(1)
-        ));
+        verify(productoRepo).save(argThat(p -> p.getVendedor() != null &&
+                p.getVendedor().getId().equals(1)));
     }
 
     @Test
@@ -169,9 +170,8 @@ class ProductoServiceTest {
         when(vendedorRepo.findById(99)).thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(
-            RuntimeException.class,
-            () -> productoService.crearProducto(99, registerDTO)
-        );
+                RuntimeException.class,
+                () -> productoService.crearProducto(99, registerDTO));
 
         assertEquals("Vendedor no encontrado", ex.getMessage());
         verify(productoRepo, never()).save(any());
@@ -184,12 +184,11 @@ class ProductoServiceTest {
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedor));
 
         RuntimeException ex = assertThrows(
-            RuntimeException.class,
-            () -> productoService.crearProducto(1, registerDTO)
-        );
+                RuntimeException.class,
+                () -> productoService.crearProducto(1, registerDTO));
 
         assertEquals("Tu cuenta debe estar activa para publicar productos",
-            ex.getMessage());
+                ex.getMessage());
         verify(productoRepo, never()).save(any());
     }
 
@@ -200,12 +199,11 @@ class ProductoServiceTest {
         when(vendedorRepo.findById(1)).thenReturn(Optional.of(vendedor));
 
         RuntimeException ex = assertThrows(
-            RuntimeException.class,
-            () -> productoService.crearProducto(1, registerDTO)
-        );
+                RuntimeException.class,
+                () -> productoService.crearProducto(1, registerDTO));
 
         assertEquals("Tu cuenta debe estar activa para publicar productos",
-            ex.getMessage());
+                ex.getMessage());
         verify(productoRepo, never()).save(any());
     }
 
@@ -218,8 +216,7 @@ class ProductoServiceTest {
         when(productoRepo.save(any())).thenReturn(producto);
         when(productoMapper.toResponseDTO(any())).thenReturn(responseDTO);
 
-        ProductoResponseDTO resultado =
-            productoService.actualizarProducto(1, 1, updateDTO);
+        ProductoResponseDTO resultado = productoService.actualizarProducto(1, 1, updateDTO);
 
         assertNotNull(resultado);
         assertEquals("Jugo de maracuyá premium", producto.getNombre());
@@ -234,9 +231,8 @@ class ProductoServiceTest {
         when(productoRepo.findById(99)).thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(
-            RuntimeException.class,
-            () -> productoService.actualizarProducto(1, 99, updateDTO)
-        );
+                RuntimeException.class,
+                () -> productoService.actualizarProducto(1, 99, updateDTO));
 
         assertEquals("Producto no encontrado", ex.getMessage());
         verify(productoRepo, never()).save(any());
@@ -254,12 +250,11 @@ class ProductoServiceTest {
         when(productoRepo.findById(1)).thenReturn(Optional.of(producto));
 
         RuntimeException ex = assertThrows(
-            RuntimeException.class,
-            () -> productoService.actualizarProducto(1, 1, updateDTO)
-        );
+                RuntimeException.class,
+                () -> productoService.actualizarProducto(1, 1, updateDTO));
 
         assertEquals("No tienes permiso para editar este producto",
-            ex.getMessage());
+                ex.getMessage());
         verify(productoRepo, never()).save(any());
     }
 
@@ -286,9 +281,8 @@ class ProductoServiceTest {
         when(productoRepo.findById(99)).thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(
-            RuntimeException.class,
-            () -> productoService.eliminarProducto(1, 99)
-        );
+                RuntimeException.class,
+                () -> productoService.eliminarProducto(1, 99));
 
         assertEquals("Producto no encontrado", ex.getMessage());
         verify(productoRepo, never()).save(any());
@@ -304,12 +298,11 @@ class ProductoServiceTest {
         when(productoRepo.findById(1)).thenReturn(Optional.of(producto));
 
         RuntimeException ex = assertThrows(
-            RuntimeException.class,
-            () -> productoService.eliminarProducto(1, 1)
-        );
+                RuntimeException.class,
+                () -> productoService.eliminarProducto(1, 1));
 
         assertEquals("No tienes permiso para eliminar este producto",
-            ex.getMessage());
+                ex.getMessage());
         verify(productoRepo, never()).save(any());
     }
 
@@ -321,13 +314,12 @@ class ProductoServiceTest {
 
         productoService.eliminarProducto(1, 1);
 
-        // Después del soft delete, findByVendedorIdAndActivoTrue no lo devuelve
-        when(productoRepo.findByVendedorIdAndActivoTrue(1))
-            .thenReturn(List.of()); // ya no aparece
+        Page<Producto> pageVacia = new PageImpl<>(List.of());
+        when(productoRepo.findByVendedorIdAndActivoTrue(eq(1), any(Pageable.class)))
+                .thenReturn(pageVacia);
 
-        List<ProductoResponseDTO> resultado =
-            productoService.listarProductosActivos(1);
+        PaginaResponseDTO<ProductoResponseDTO> resultado = productoService.listarProductosActivos(1, 0, 10);
 
-        assertTrue(resultado.isEmpty());
+        assertTrue(resultado.getContenido().isEmpty());
     }
 }

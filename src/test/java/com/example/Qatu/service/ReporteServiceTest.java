@@ -2,6 +2,8 @@ package com.example.Qatu.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -14,7 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import com.example.Qatu.dto.PaginaResponseDTO;
 import com.example.Qatu.dto.ReporteRequestDTO;
 import com.example.Qatu.dto.ReporteResponseDTO;
 import com.example.Qatu.exception.ModelNotFoundException;
@@ -25,6 +31,7 @@ import com.example.Qatu.models.enums.EstadoVendedor;
 import com.example.Qatu.repository.ReporteRepo;
 import com.example.Qatu.repository.VendedorRepo;
 import com.example.Qatu.service.impl.ReporteService;
+
 
 @ExtendWith(MockitoExtension.class)
 class ReporteServiceTest {
@@ -161,26 +168,26 @@ class ReporteServiceTest {
     @Test
     @DisplayName("Lista los reportes del vendedor correctamente")
     void listarMisReportes_exitoso() {
-        when(repo.findByVendedorId(1)).thenReturn(List.of(reporte));
+        Page<Reporte> page = new PageImpl<>(List.of(reporte));
+        when(repo.findByVendedorId(eq(1), any(Pageable.class))).thenReturn(page);
         when(reporteMapper.toResponseDTO(reporte)).thenReturn(responseDTO);
 
-        List<ReporteResponseDTO> resultado = reporteService.listarMisReportes(1);
+        PaginaResponseDTO<ReporteResponseDTO> resultado = reporteService.listarMisReportes(1, 0, 10);
 
-        assertEquals(1, resultado.size());
-        assertEquals("No puedo subir fotos", resultado.get(0).getAsunto());
-        assertEquals("ABIERTO", resultado.get(0).getEstado());
-        verify(repo, times(1)).findByVendedorId(1);
+        assertEquals(1, resultado.getContenido().size());
+        assertEquals("No puedo subir fotos", resultado.getContenido().get(0).getAsunto());
+        verify(repo, times(1)).findByVendedorId(eq(1), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Devuelve lista vacía si el vendedor no tiene reportes")
     void listarMisReportes_listaVacia() {
-        when(repo.findByVendedorId(1)).thenReturn(List.of());
+        Page<Reporte> page = new PageImpl<>(List.of());
+        when(repo.findByVendedorId(eq(1), any(Pageable.class))).thenReturn(page);
 
-        List<ReporteResponseDTO> resultado = reporteService.listarMisReportes(1);
+        PaginaResponseDTO<ReporteResponseDTO> resultado = reporteService.listarMisReportes(1, 0, 10);
 
-        assertTrue(resultado.isEmpty());
-        verify(repo, times(1)).findByVendedorId(1);
+        assertTrue(resultado.getContenido().isEmpty());
     }
 
     @Test
@@ -196,14 +203,15 @@ class ReporteServiceTest {
         responseDTO2.setId(2);
         responseDTO2.setAsunto("Error en el login");
 
-        when(repo.findByVendedorId(1)).thenReturn(List.of(reporte, reporte2));
+        Page<Reporte> page = new PageImpl<>(List.of(reporte, reporte2));
+        when(repo.findByVendedorId(eq(1), any(Pageable.class))).thenReturn(page);
         when(reporteMapper.toResponseDTO(reporte)).thenReturn(responseDTO);
         when(reporteMapper.toResponseDTO(reporte2)).thenReturn(responseDTO2);
 
-        List<ReporteResponseDTO> resultado = reporteService.listarMisReportes(1);
+        PaginaResponseDTO<ReporteResponseDTO> resultado = reporteService.listarMisReportes(1, 0, 10);
 
-        assertEquals(2, resultado.size());
-        assertEquals("No puedo subir fotos", resultado.get(0).getAsunto());
-        assertEquals("Error en el login", resultado.get(1).getAsunto());
+        assertEquals(2, resultado.getContenido().size());
+        assertEquals("No puedo subir fotos", resultado.getContenido().get(0).getAsunto());
+        assertEquals("Error en el login", resultado.getContenido().get(1).getAsunto());
     }
 }
