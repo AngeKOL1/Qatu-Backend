@@ -1,7 +1,5 @@
 package com.example.Qatu.dto;
 
-import java.util.List;
-
 import com.google.auto.value.AutoValue.Builder;
 
 import lombok.AllArgsConstructor;
@@ -26,5 +24,4 @@ public class VendedorPerfilDTO {
     private Boolean visible;
     private Double lat;
     private Double lng;
-    private List<ProductoResponseDTO> productos;
 }

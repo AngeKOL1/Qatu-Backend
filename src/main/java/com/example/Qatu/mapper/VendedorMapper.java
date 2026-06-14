@@ -50,6 +50,5 @@ public interface VendedorMapper {
     @Mapping(target = "horarioFin", source = "horarioFin")
     @Mapping(target = "lat", ignore = true) // se asigna en el service
     @Mapping(target = "lng", ignore = true) // se asigna en el service
-    @Mapping(target = "productos", ignore = true) // se asigna en el service
     VendedorPerfilDTO toPerfilDTO(Vendedor vendedor);
 }

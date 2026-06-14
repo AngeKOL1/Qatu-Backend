@@ -5,12 +5,10 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.Qatu.dto.PaginaResponseDTO;
-import com.example.Qatu.dto.ProductoResponseDTO;
 import com.example.Qatu.dto.VendedorMapaDTO;
 import com.example.Qatu.dto.VendedorPerfilDTO;
 import com.example.Qatu.dto.VendedorRegisterDTO;
@@ -156,17 +154,6 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
                     dto.setLng(GeoUtils.getLng(u.getCoordenada()));
                 });
 
-        Pageable pageable = PageRequest.of(pagina, tamanio,
-                Sort.by("fechaCreacion").descending());
-
-        List<ProductoResponseDTO> productos = productoRepo
-                .findByVendedorIdAndActivoTrue(v.getId(), pageable)
-                .getContent()
-                .stream()
-                .map(productoMapper::toResponseDTO)
-                .toList();
-
-        dto.setProductos(productos);
         return dto;
     }
 }
