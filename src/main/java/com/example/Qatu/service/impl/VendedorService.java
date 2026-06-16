@@ -14,13 +14,11 @@ import com.example.Qatu.dto.VendedorPerfilDTO;
 import com.example.Qatu.dto.VendedorRegisterDTO;
 import com.example.Qatu.dto.VendedorResponseDTO;
 import com.example.Qatu.exception.ModelNotFoundException;
-import com.example.Qatu.mapper.ProductoMapper;
 import com.example.Qatu.mapper.VendedorMapper;
 import com.example.Qatu.models.Categoria;
 import com.example.Qatu.models.Vendedor;
 import com.example.Qatu.models.enums.EstadoVendedor;
 import com.example.Qatu.repository.CategoriaRepo;
-import com.example.Qatu.repository.ProductoRepo;
 import com.example.Qatu.repository.UbicacionRepo;
 import com.example.Qatu.repository.VendedorRepo;
 import com.example.Qatu.service.IVendedorService;
@@ -37,8 +35,6 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
     private final CategoriaRepo categoriaRepo;
     private final PasswordEncoder passwordEncoder;
     private final UbicacionRepo ubicacionRepo;
-    private final ProductoRepo productoRepo;
-    private final ProductoMapper productoMapper;
 
     @Override
     protected VendedorRepo getRepo() {

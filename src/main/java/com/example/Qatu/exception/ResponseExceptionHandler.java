@@ -3,15 +3,45 @@ package com.example.Qatu.exception;
 // import org.apache.hc.client5.http.auth.InvalidCredentialsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
 
 @RestControllerAdvice
 public class ResponseExceptionHandler {
     public static final String ERROR_TYPE_PROPERTY = "errorType";
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidationErrors(
+            MethodArgumentNotValidException ex, WebRequest request) {
+
+        Map<String, String> errores = new HashMap<>();
+
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String campo = ((FieldError) error).getField();
+            String mensaje = error.getDefaultMessage();
+            errores.put(campo, mensaje);
+        });
+
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Uno o más campos tienen errores de validación");
+
+        pd.setTitle("Error de validación");
+        pd.setType(URI.create(request.getDescription(false)));
+        pd.setProperty(ERROR_TYPE_PROPERTY, "ValidationError");
+        pd.setProperty("campos", errores); // ← aquí van los errores por campo
+
+        return pd;
+    }
 
     @ExceptionHandler(ModelNotFoundException.class)
     public ProblemDetail handleModelNotFoundException(ModelNotFoundException ex, WebRequest request) {

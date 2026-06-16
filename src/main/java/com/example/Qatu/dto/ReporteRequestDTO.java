@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 public class ReporteRequestDTO {
 
     @NotBlank(message = "El asunto es obligatorio")
-    @Size(max = 150, message = "El asunto no puede superar 150 caracteres")
+    @Size(max = 150, min = 8, message = "El asunto debe tener entre 8 y 150 caracteres")
     private String asunto;
 
     @NotBlank(message = "La descripción es obligatoria")
-    @Size(max = 500, message = "La descripción no puede superar 500 caracteres")
+    @Size(max = 500, min = 20, message = "La descripción debe tener entre 20 y 500 caracteres")
     private String descripcion;
 }
