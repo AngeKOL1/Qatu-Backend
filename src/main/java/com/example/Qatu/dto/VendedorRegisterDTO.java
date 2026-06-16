@@ -28,6 +28,10 @@ public class VendedorRegisterDTO {
     @Size(min = 8, message = "La contraseña debe tener mínimo 8 caracteres")
     private String password;
 
+    @NotBlank(message = "La confirmación de la contraseña es obligatoria")
+    @Size(min = 8, message = "La confirmación de la contraseña debe tener mínimo 8 caracteres")
+    private String confirmPassword;
+
     @NotBlank(message = "El DNI es obligatorio")
     @Size(min = 8, max = 8, message = "El DNI debe tener exactamente 8 caracteres")
     private String dni;

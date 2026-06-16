@@ -49,6 +49,10 @@ public class VendedorService extends GenericService<Vendedor, Integer> implement
             throw new IllegalArgumentException("El email ya está registrado");
         }
 
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Las contraseñas no coinciden");
+        }
+
         // 2. Buscar la categoría
         Categoria categoria = categoriaRepo.findByNombre(dto.getNombreCategoria())
                 .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada"));
