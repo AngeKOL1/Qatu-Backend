@@ -22,5 +22,4 @@ public interface VendedorRepo extends GenericRepo<Vendedor, Integer> {
     Page<Vendedor> findByEstadoAndVisibleTrue(EstadoVendedor estado, Pageable pageable);
 
     Page<Vendedor> findAll(Pageable pageable);
-
 }

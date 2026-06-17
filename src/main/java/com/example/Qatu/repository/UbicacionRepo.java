@@ -16,35 +16,41 @@ public interface UbicacionRepo extends GenericRepo<Ubicacion, Integer> {
     void desactivarPorVendedor(@Param("vendedorId") Integer vendedorId);
 
     @Query(value = """
-        SELECT COUNT(*) FROM ubicaciones u
-        JOIN vendedores v ON v.id = u.vendedor_id
-        WHERE u.activo = true
-        AND v.estado = 'ACTIVO'
-        AND ST_DWithin(
-                u.coordenada,
-                ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
-                100
-            )
-        """, nativeQuery = true)
+            SELECT COUNT(*) FROM ubicaciones u
+            JOIN vendedores v ON v.id = u.vendedor_id
+            WHERE u.activo = true
+            AND v.estado = 'ACTIVO'
+            AND ST_DWithin(
+                    u.coordenada,
+                    ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+                    100
+                )
+            """, nativeQuery = true)
     int contarEnRadio100m(@Param("lat") double lat, @Param("lng") double lng);
 
     Optional<Ubicacion> findByVendedorIdAndActivoTrue(Integer vendedorId);
 
+    // En UbicacionService, VendedorService, etc:
+
+    // En lugar de Optional — toma solo la más reciente activa
+    Optional<Ubicacion> findFirstByVendedorIdAndActivoTrueOrderByTimestampDesc(
+            Integer vendedorId);
+
     // Obtener todos los puntos activos con su conteo de vecinos en radio
     @Query(value = """
-        SELECT
-            ST_Y(u.coordenada::geometry)  AS lat,
-            ST_X(u.coordenada::geometry)  AS lng,
-            COUNT(*) OVER (
-                PARTITION BY ST_SnapToGrid(
-                    u.coordenada::geometry, :radio / 111320.0
-                )
-            ) AS count
-        FROM ubicaciones u
-        JOIN vendedores v ON v.id = u.vendedor_id
-        WHERE u.activo = true
-        AND v.estado = 'ACTIVO'
-        AND v.visible = true
-        """, nativeQuery = true)
+            SELECT
+                ST_Y(u.coordenada::geometry)  AS lat,
+                ST_X(u.coordenada::geometry)  AS lng,
+                COUNT(*) OVER (
+                    PARTITION BY ST_SnapToGrid(
+                        u.coordenada::geometry, :radio / 111320.0
+                    )
+                ) AS count
+            FROM ubicaciones u
+            JOIN vendedores v ON v.id = u.vendedor_id
+            WHERE u.activo = true
+            AND v.estado = 'ACTIVO'
+            AND v.visible = true
+            """, nativeQuery = true)
     List<Object[]> findPuntosActivosConDensidad(@Param("radio") double radio);
 }

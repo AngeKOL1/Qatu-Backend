@@ -34,22 +34,21 @@ public class InactividadVendedorJob {
         LocalDateTime limite = LocalDateTime.now().minusMinutes(10);
 
         Page<Vendedor> vendedoresActivos = vendedorRepo
-            .findByEstado(EstadoVendedor.ACTIVO, Pageable.unpaged());
+                .findByEstado(EstadoVendedor.ACTIVO, Pageable.unpaged());
 
         vendedoresActivos.forEach(vendedor -> {
-            ubicacionRepo.findByVendedorIdAndActivoTrue(vendedor.getId())
-                .ifPresent(ubicacion -> {
-                    if (ubicacion.getTimestamp().isBefore(limite)) {
-                        // Desactivar ubicación
-                        ubicacion.setActivo(false);
-                        ubicacionRepo.save(ubicacion);
-
-                        webSoketSevice.emitirVendedorInactivo(vendedor.getId());
-
-                        log.info("Vendedor {} marcado inactivo por falta de GPS", 
-                            vendedor.getId());
-                    }
-                });
+            // ← usa el nuevo método que toma solo la más reciente
+            ubicacionRepo.findFirstByVendedorIdAndActivoTrueOrderByTimestampDesc(
+                    vendedor.getId())
+                    .ifPresent(ubicacion -> {
+                        if (ubicacion.getTimestamp().isBefore(limite)) {
+                            ubicacion.setActivo(false);
+                            ubicacionRepo.save(ubicacion);
+                            webSoketSevice.emitirVendedorInactivo(vendedor.getId());
+                            log.info("Vendedor {} marcado inactivo por falta de GPS",
+                                    vendedor.getId());
+                        }
+                    });
         });
     }
 }
