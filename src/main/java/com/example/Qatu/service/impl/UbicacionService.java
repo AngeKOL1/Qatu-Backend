@@ -35,7 +35,7 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
     @Override
     protected UbicacionRepo getRepo() {
         return repo;
-    } 
+    }
 
     @Override
     @Transactional
@@ -44,16 +44,19 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
 
         // 1. Verificar vendedor
         Vendedor vendedor = vendedorRepo.findById(vendedorId)
-            .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
+                .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
 
         if (vendedor.getEstado() != EstadoVendedor.ACTIVO) {
             throw new ModelNotFoundException("El vendedor no está activo");
         }
 
-        // 2. Desactivar ubicación anterior
+        // 2. Contar vendedores ANTES de agregar el nuevo
+        int vendedoresAntes = repo.contarEnRadio100m(dto.getLat(), dto.getLng());
+
+        // 3. Desactivar ubicación anterior
         repo.desactivarPorVendedor(vendedorId);
 
-        // 3. Crear nueva ubicación
+        // 4. Crear nueva ubicación
         Ubicacion nueva = new Ubicacion();
         nueva.setVendedor(vendedor);
         nueva.setCoordenada(GeoUtils.crearPunto(dto.getLat(), dto.getLng()));
@@ -61,40 +64,46 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
         nueva.setTimestamp(LocalDateTime.now());
         Ubicacion guardada = repo.save(nueva);
 
-        // 4. Emitir evento WebSocket ← NUEVO
+        // 5. Emitir evento WebSocket
         UbicacionEventDTO evento = UbicacionEventDTO.builder()
-            .evento("UBICACION_ACTUALIZADA")
-            .vendedorId(vendedorId)
-            .nombreNegocio(vendedor.getNombre())
-            .categoria(vendedor.getCategoria() != null
-                ? vendedor.getCategoria().getNombre() : null)
-            .lat(dto.getLat())
-            .lng(dto.getLng())
-            .visible(vendedor.getVisible())
-            .timestamp(guardada.getTimestamp())
-            .build();
+                .evento("UBICACION_ACTUALIZADA")
+                .vendedorId(vendedorId)
+                .nombreNegocio(vendedor.getNombre())
+                .categoria(vendedor.getCategoria() != null
+                        ? vendedor.getCategoria().getNombre()
+                        : null)
+                .lat(dto.getLat())
+                .lng(dto.getLng())
+                .visible(vendedor.getVisible())
+                .timestamp(guardada.getTimestamp())
+                .build();
 
         webSocketService.emitirUbicacionActualizada(evento);
 
-        // 5. Calcular congestión y emitir si supera umbral ← NUEVO
+        // 6. Contar vendedores DESPUÉS de agregar el nuevo
+        int vendedoresDespues = repo.contarEnRadio100m(dto.getLat(), dto.getLng());
+        emitirNivelCongestion(dto.getLat(), dto.getLng(), vendedoresDespues);
 
-        int vendedoresEnZona = repo.contarEnRadio100m(dto.getLat(), dto.getLng());
-        emitirNivelCongestion(dto.getLat(), dto.getLng(), vendedoresEnZona);
-
-        // ← NUEVO: evaluar si se debe enviar sugerencia
-        if (vendedoresEnZona >= umbralConfig.getUmbralRojo()) {
+        // 7. Evaluar sugerencia según tipo de desbordamiento
+        if (vendedoresDespues >= umbralConfig.getUmbralRojo()
+                && vendedoresAntes < umbralConfig.getUmbralRojo()) {
+            // Este vendedor fue el que desbordó → ruta automática
+            sugerenciaService.evaluarYEnviarRutaSugerida(
+                    vendedorId, dto.getLat(), dto.getLng());
+        } else if (vendedoresDespues >= umbralConfig.getUmbralRojo()) {
+            // Ya estaba congestionado → sugerencia normal
             sugerenciaService.evaluarYEnviarSugerencia(
-                vendedorId, dto.getLat(), dto.getLng());
+                    vendedorId, dto.getLat(), dto.getLng());
         }
 
-        // 6. Armar response
+        // 8. Armar response
         return UbicacionResponseDTO.builder()
-            .ubicacionId(guardada.getId())
-            .vendedorId(vendedorId)
-            .lat(dto.getLat())
-            .lng(dto.getLng())
-            .timestamp(guardada.getTimestamp())
-            .build();
+                .ubicacionId(guardada.getId())
+                .vendedorId(vendedorId)
+                .lat(dto.getLat())
+                .lng(dto.getLng())
+                .timestamp(guardada.getTimestamp())
+                .build();
     }
 
     // Determina el nivel de congestión y emite el evento
@@ -103,16 +112,15 @@ public class UbicacionService extends GenericService<Ubicacion, Integer> impleme
         String nivel = heatmapService.determinarNivel(count);
 
         CongestionEventDTO evento = CongestionEventDTO.builder()
-            .evento("ZONA_CONGESTIONADA")
-            .lat(lat)
-            .lng(lng)
-            .vendedoresCount(count)
-            .nivel(nivel)
-            .timestamp(LocalDateTime.now())
-            .build();
+                .evento("ZONA_CONGESTIONADA")
+                .lat(lat)
+                .lng(lng)
+                .vendedoresCount(count)
+                .nivel(nivel)
+                .timestamp(LocalDateTime.now())
+                .build();
 
         webSocketService.emitirCongestion(evento);
     }
 
-    
 }

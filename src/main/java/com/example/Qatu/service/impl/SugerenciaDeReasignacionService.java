@@ -24,6 +24,7 @@ import com.example.Qatu.repository.UbicacionRepo;
 import com.example.Qatu.repository.VendedorRepo;
 import com.example.Qatu.repository.ZonaRepo;
 import com.example.Qatu.service.ISugerenciaReasignacionService;
+import com.example.Qatu.util.GeoUtils;
 import com.example.Qatu.util.PaginacionUtils;
 
 import jakarta.transaction.Transactional;
@@ -58,7 +59,7 @@ public class SugerenciaDeReasignacionService extends GenericService<SugerenciaRe
                 Vendedor vendedor = vendedorRepo.findById(vendedorId)
                                 .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
 
-                // RN-03: solo CARRITO o CAMIONETA reciben sugerencias
+                // RN-03: solo CARRITO o CAMIONETA
                 if (vendedor.getTipoMovilidad() == Movilidad.FIJO) {
                         log.info("Vendedor {} es FIJO — no recibe sugerencias", vendedorId);
                         return;
@@ -70,7 +71,7 @@ public class SugerenciaDeReasignacionService extends GenericService<SugerenciaRe
                         return;
                 }
 
-                // Buscar zonas de reasignación disponibles cerca
+                // Buscar zonas disponibles cercanas
                 List<Zona> zonasDisponibles = zonaRepo
                                 .findZonasReasignacionDisponibles(lat, lng);
 
@@ -79,22 +80,19 @@ public class SugerenciaDeReasignacionService extends GenericService<SugerenciaRe
                         return;
                 }
 
-                // Tomar la zona más cercana
                 Zona zonaSugerida = zonasDisponibles.get(0);
 
-                // Obtener ubicación actual del vendedor
+                // ← corregido: usa findFirst para evitar NonUniqueResultException
                 Ubicacion ubicacionActual = ubicacionRepo
-                                .findByVendedorIdAndActivoTrue(vendedorId)
+                                .findFirstByVendedorIdAndActivoTrueOrderByTimestampDesc(vendedorId)
                                 .orElseThrow(() -> new ModelNotFoundException("Ubicación no encontrada"));
 
-                // Crear la sugerencia
                 SugerenciaReasignacion sugerencia = new SugerenciaReasignacion();
                 sugerencia.setVendedor(vendedor);
                 sugerencia.setZona(zonaSugerida);
                 sugerencia.setUbicacion(ubicacionActual);
                 repo.save(sugerencia);
 
-                // Enviar notificación FCM
                 if (vendedor.getFcmToken() != null) {
                         fcmService.enviarNotificacion(
                                         vendedor.getFcmToken(),
@@ -108,6 +106,63 @@ public class SugerenciaDeReasignacionService extends GenericService<SugerenciaRe
                                 vendedorId, zonaSugerida.getNombre());
         }
 
+        @Override
+        public void evaluarYEnviarRutaSugerida(
+                        Integer vendedorId, double lat, double lng) {
+
+                Vendedor vendedor = vendedorRepo.findById(vendedorId)
+                                .orElseThrow(() -> new ModelNotFoundException("Vendedor no encontrado"));
+
+                // RN-03: solo CARRITO o CAMIONETA
+                if (vendedor.getTipoMovilidad() == Movilidad.FIJO) {
+                        log.info("Vendedor {} es FIJO — sin ruta sugerida", vendedorId);
+                        return;
+                }
+
+                // RN-10: cooldown 30 minutos
+                if (estaDentroDeCooldown(vendedorId)) {
+                        log.info("Vendedor {} en cooldown — ruta no enviada", vendedorId);
+                        return;
+                }
+
+                // Buscar zona disponible más cercana
+                List<Zona> zonasDisponibles = zonaRepo
+                                .findZonasReasignacionDisponibles(lat, lng);
+
+                if (zonasDisponibles.isEmpty()) {
+                        log.info("Sin zonas disponibles para ruta del vendedor {}", vendedorId);
+                        return;
+                }
+
+                Zona zonaSugerida = zonasDisponibles.get(0);
+
+                // Calcular centroide de la zona como punto de destino
+                double[] destino = GeoUtils.calcularCentroide(zonaSugerida.getGeometria());
+
+                // Guardar sugerencia en BD
+                Ubicacion ubicacionActual = ubicacionRepo
+                                .findFirstByVendedorIdAndActivoTrueOrderByTimestampDesc(vendedorId)
+                                .orElseThrow(() -> new ModelNotFoundException("Ubicación no encontrada"));
+
+                SugerenciaReasignacion sugerencia = new SugerenciaReasignacion();
+                sugerencia.setVendedor(vendedor);
+                sugerencia.setZona(zonaSugerida);
+                sugerencia.setUbicacion(ubicacionActual);
+                repo.save(sugerencia);
+
+                // Enviar FCM con coordenadas de destino para trazar ruta en Flutter
+                if (vendedor.getFcmToken() != null) {
+                        fcmService.enviarNotificacionConRuta(
+                                        vendedor.getFcmToken(),
+                                        "Zona congestionada — ruta sugerida",
+                                        "Te sugerimos moverte a: " + zonaSugerida.getNombre(),
+                                        destino[0],
+                                        destino[1]);
+                }
+
+                log.info("Ruta sugerida enviada al vendedor {} → zona {} ({}, {})",
+                                vendedorId, zonaSugerida.getNombre(), destino[0], destino[1]);
+        }
         // ── Vendedor responde la sugerencia ───────────────────────────────────────
 
         @Override

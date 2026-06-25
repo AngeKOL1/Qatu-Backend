@@ -38,4 +38,9 @@ public class GeoUtils {
                 .map(c -> List.of(c.x, c.y)) // [lng, lat]
                 .collect(Collectors.toList());
     }
+
+    public static double[] calcularCentroide(Polygon polygon) {
+        Point centroide = polygon.getCentroid();
+        return new double[] { centroide.getY(), centroide.getX() }; // lat, lng
+    }
 }
