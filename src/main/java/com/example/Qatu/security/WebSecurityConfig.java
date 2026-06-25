@@ -125,6 +125,9 @@ public class WebSecurityConfig {
                 // Reportes
                 .requestMatchers("/api/reportes/mis-reportes").hasAuthority("VENDEDOR")
 
+                //Observadores
+                .requestMatchers("/api/observadores/mi-perfil").hasAuthority("USUARIO_OBSERVADOR")
+
                 // ── Todo lo demás requiere autenticación ─────────────────
                 .anyRequest().authenticated()
             )

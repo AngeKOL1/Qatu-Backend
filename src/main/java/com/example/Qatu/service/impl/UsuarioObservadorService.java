@@ -1,8 +1,11 @@
 package com.example.Qatu.service.impl;
 
+import java.time.LocalDate;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.Qatu.dto.UsuarioObservadorPerfilDTO;
 import com.example.Qatu.dto.UsuarioObservadorRegisterDTO;
 import com.example.Qatu.dto.UsuarioObservadorResponseDTO;
 import com.example.Qatu.mapper.UsuarioObservadorMapper;
@@ -41,4 +44,15 @@ public class UsuarioObservadorService extends GenericService<UsuarioObservador, 
         UsuarioObservadorResponseDTO responseDTO = mapper.toResponse(repo.save(usuarioObservador));
         return responseDTO;
     }
+
+    @Override
+    public UsuarioObservadorPerfilDTO obtenerPerfilUsuarioObservador(Integer id){
+        UsuarioObservador usuarioObservador = repo.findById(id).orElse(null);
+        if(usuarioObservador == null){
+            throw new IllegalArgumentException("Usuario observador no encontrado");
+        }
+        usuarioObservador.setFechaRegistro(usuarioObservador.getFechaRegistro());
+        return mapper.toPerfil(usuarioObservador);
+    }
+
 }
