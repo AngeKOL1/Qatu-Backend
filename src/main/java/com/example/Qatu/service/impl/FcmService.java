@@ -47,13 +47,17 @@ public class FcmService {
             String fcmToken, String titulo, String cuerpo,
             double latDestino, double lngDestino) {
 
+        // ← log temporal para verificar coordenadas
+        log.info("Enviando ruta — latDestino={} lngDestino={}",
+                latDestino, lngDestino);
+
         if (fcmToken == null || fcmToken.isBlank()) {
-            log.warn("FCM token vacío — ruta sugerida no enviada");
+            log.warn("FCM token vacío");
             return;
         }
 
         if (FirebaseApp.getApps().isEmpty()) {
-            log.warn("FCM no disponible — ruta sugerida no enviada");
+            log.warn("Firebase no disponible");
             return;
         }
 
@@ -70,10 +74,11 @@ public class FcmService {
                     .build();
 
             String response = FirebaseMessaging.getInstance().send(message);
-            log.info("Ruta sugerida enviada — messageId={}", response);
+            log.info("FCM enviado — messageId={} latDestino={} lngDestino={}",
+                    response, latDestino, lngDestino);
 
         } catch (FirebaseMessagingException e) {
-            log.error("Error enviando ruta sugerida FCM: {}", e.getMessage());
+            log.error("Error enviando FCM: {}", e.getMessage());
         }
     }
 }
