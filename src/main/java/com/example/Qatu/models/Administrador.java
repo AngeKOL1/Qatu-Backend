@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -32,13 +33,16 @@ public class Administrador {
     @Column(unique = true, nullable = false)
     private String email;
     @Column(nullable = false, length = 255)
+    @ToString.Exclude
     private String password;
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDate createdAt;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "administrador")
     private List<Reporte> reportes;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "administrador")
     private List<Zona> zonas;
 

@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -44,14 +45,17 @@ public class SugerenciaReasignacion {
     @Column(nullable = true)
     private LocalDateTime fechaRespuesta; // ← LocalDateTime
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendedor_id", nullable = false)
     private Vendedor vendedor;            // ← faltaba relación con vendedor
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "zona_id", nullable = false)
     private Zona zona;                    // ← faltaba relación con zona
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ubicacion_id", nullable = false)
     private Ubicacion ubicacion;

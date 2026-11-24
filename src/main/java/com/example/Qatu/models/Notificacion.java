@@ -20,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -50,6 +51,7 @@ public class Notificacion {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;      // ← LocalDateTime no LocalDate
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendedor_id", nullable = false)
     private Vendedor vendedor;

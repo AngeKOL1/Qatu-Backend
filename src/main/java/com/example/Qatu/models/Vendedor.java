@@ -12,6 +12,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -41,11 +43,12 @@ public class Vendedor {
     private String nombre;
     @Column(unique = true, nullable = false)
     private String email;
-    @Column(length =8, nullable = false)
+    @Column(length = 8, nullable = false, unique = true)
     private String dni;
     @Column(nullable = false)
+    @ToString.Exclude
     private String password;
-    @Column(length = 20, nullable = false)
+    @Column(length = 20, nullable = false, unique = true)
     private String telefono;
     @Column(length = 255, nullable = true)
     private String descripcion;
@@ -61,29 +64,35 @@ public class Vendedor {
     private LocalTime horarioFin;
     @Column(nullable = true)
     private String fotoPerfilUrl;
-    @Column(nullable = false)
-    private LocalDateTime createdAt; 
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
     @Column(nullable = false)
     private LocalDateTime updatedAt;
     @Column(nullable = false)
     private Boolean visible = false;
     @Column(nullable = true, length = 500)
+    @ToString.Exclude
     private String fcmToken;
 
 
-    @ManyToOne
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "vendedor")
     private List<Producto> productos;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "vendedor")
     private List<Ubicacion> ubicaciones;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "vendedor")
     private List<Notificacion> notificaciones;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "vendedor")
     private List<Reporte> reportes;
 

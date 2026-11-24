@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import com.example.Qatu.models.enums.EstadoObservador;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -14,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -28,17 +31,19 @@ public class UsuarioObservador {
     private Integer id;
     @Column(nullable = false, length = 100)
     private String nombre;
-    @Column(length = 8, nullable = false)
+    @Column(length = 8, nullable = false, unique = true)
     private String dni;
     @Column(length = 100, unique = true, nullable = false)
     private String email;
     @Column(length = 20, nullable = false, unique = true)
     private String telefono;
     @Column(nullable = false)
+    @ToString.Exclude
     private String password;
-    @Column(length = 255, nullable = false)
+    @Column(length = 20, nullable = false)
+    @Enumerated(EnumType.STRING)
     private EstadoObservador estado;
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDate fechaRegistro;
     @Column(nullable = true)
     private LocalDate fechaUltimaActividad;

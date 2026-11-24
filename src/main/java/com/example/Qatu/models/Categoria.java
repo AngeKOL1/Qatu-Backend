@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -32,6 +33,7 @@ public class Categoria {
     @Column(length = 200, nullable = true)
     private String descripcion;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "categoria")
     private List<Vendedor> vendedores;
 }
